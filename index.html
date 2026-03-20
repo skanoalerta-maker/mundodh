@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo D&H - Suministros para Empresas</title>
+    <meta name="description" content="Catálogo completo de suministros para oficina, aseo, ferretería, computación y escolar. Cotiza por WhatsApp.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23c8102e'/><text y='.9em' font-size='90' fill='%23fff' font-family='sans-serif'>D&H</text></svg>">
+    
+    <style>
+        :root {
+            --primary: #c8102e;
+            --primary-light: #e63946;
+            --primary-dark: #a30d24;
+            --white: #ffffff;
+            --gray-100: #f8fafc;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-800: #1e293b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: linear-gradient(135deg, var(--gray-100) 0%, #f1f5f9 100%);
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .admin-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--white);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .categories {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .category-btn {
+            background: var(--white);
+            border: 2px solid var(--gray-200);
+            color: var(--gray-800);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Products Grid */
+        .products-section {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--gray-800);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--gray-200), var(--gray-300));
+            position: relative;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .product-image::after {
+            content: attr(data-category);
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .product-desc {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .prices {
+            display: flex;
+            gap: 1rem;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-list {
+            font-size: 1.1rem;
+            color: var(--gray-600);
+            text-decoration: line-through;
+        }
+
+        .price-offer {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .whatsapp-btn {
+            width: 100%;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-1px);
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -500px;
+            width: 500px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-panel.open {
+            right: 0;
+        }
+
+        .admin-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--primary);
+            color: white;
+        }
+
+        .admin-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        .admin-form {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--gray-800);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-800);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .products-list {
+            padding: 0 2rem 2rem;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            background: var(--gray-100);
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container,
+            .products-section {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--gray-600);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">Mundo D&H</div>
+            <div class="header-actions">
+                <button class="admin-btn" onclick="toggleAdmin()">📝 Admin Panel</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Suministros para tu Empresa</h1>
+        <p>Todo lo que necesitas para oficina, aseo, ferretería, computación y escolar. Calidad profesional a precios competitivos.</p>
+        <div class="categories" id="categories"></div>
+    </section>
+
+    <!-- Products -->
+    <section class="products-section">
+        <h2 class="section-title">Catálogo de Productos</h2>
+        <div class="products-grid" id="productsGrid"></div>
+    </section>
+
+    <!-- Admin Panel -->
+    <div class="overlay" id="overlay" onclick="toggleAdmin()"></div>
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h3>Gestión de Productos</h3>
+            <button class="admin-close" onclick="toggleAdmin()">×</button>
+        </div>
+        <form class="admin-form" onsubmit="addProduct(event)">
+            <div class="form-group">
+                <label>Nombre del Producto *</label>
+                <input type="text" id="productName" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio Base (S/.) *</label>
+                    <input type="number" id="productPrice" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoría *</label>
+                    <select id="productCategory" required>
+                        <option value="">Seleccionar...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea id="productDesc" rows="3" placeholder="Breve descripción del producto..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>URL de Imagen (opcional)</label>
+                <input type="url" id="productImage" placeholder="https://ejemplo.com/imagen.jpg">
+                <small>Se generará automáticamente si está vacía</small>
+            </div>
+            <button type="submit" class="btn">➕ Agregar Producto</button>
+        </form>
+        <div class="products-list">
+            <h4>Productos Guardados (<span id="productsCount">0</span>)</h4>
+            <div id="savedProducts"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const CONFIG = {
+            margin: 0.20, // 20% margen
+            whatsapp: 'https://wa.me/51999999999?text=', // Cambiar por tu número
+            categories: ['Oficina', 'Aseo', 'Ferretería', 'Computación', 'Escolar']
+        };
+
+        // Palabras clave para imágenes Unsplash
+        const IMAGE_KEYWORDS = {
+            'Oficina': 'office supplies white background',
+            'Aseo': 'cleaning supplies white background',
+            'Ferretería': 'hardware tools white background',
+            'Computación': 'computer accessories white background',
+            'Escolar': 'school supplies white background'
+        };
+
+        // Productos iniciales (12 ejemplos)
+        let products = JSON.parse(localStorage.getItem('mundoDH_products')) || [
+            {
+                id: 1,
+                name: 'Cuaderno Profesional 1/4",
+                price: 4.50,
+                category: 'Oficina',
+                desc: 'Cuaderno rayado 96 hojas, tapa dura',
+                image: ''
+            },
+            {
+                id: 2,
+                name: 'Lápices HB Faber-Castell (12u)',
+                price: 6.80,
+                category: 'Oficina',
+                desc: 'Juego de 12 lápices triangulares',
+                image: ''
+            },
+            {
+                id: 3,
+                name: 'Detergente Líquido 5L',
+                price: 28.90,
+                category: 'Aseo',
+                desc: 'Detergente concentrado para ropa',
+                image: ''
+            },
+            {
+                id: 4,
+                name: 'Desinfectante Multiusos 1L',
+                price: 12.50,
+                category: 'Aseo',
+                desc: 'Elimina 99.9% de bacterias',
+                image: ''
+            },
+            {
+                id: 5,
+                name: 'Taladro Percutor 650W',
+                price: 189.00,
+                category: 'Ferretería',
+                desc: 'Taladro profesional con maletín',
+                image: ''
+            },
+            {
+                id: 6,
+                name: 'Llave Combinada 14mm',
+                price: 15.80,
+                category: 'Ferretería',
+                desc: 'Llave de alta resistencia',
+                image: ''
+            },
+            {
+                id: 7,
+                name: 'Mouse Óptico USB',
+                price: 22.90,
+                category: 'Computación',
+                desc: 'Mouse ergonómico 1600 DPI',
+               
