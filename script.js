@@ -1,8 +1,32 @@
 const WHATSAPP_NUMERO = "56954486171";
 
+/* =========================
+   HELPERS GENERALES
+========================= */
+
+function safeText(value) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim();
+}
+
+function escapeHtml(value) {
+  return safeText(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : "";
+}
+
 function openWhatsApp(message) {
-  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
+  const text = safeText(message);
+  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(text)}`;
+  window.location.href = url;
 }
 
 function quickWhatsApp() {
@@ -11,9 +35,9 @@ Quisiera cotizar productos o coordinar una atención para empresa o pyme en Gran
   openWhatsApp(msg);
 }
 
-function val(id) {
-  return (document.getElementById(id)?.value || "").trim();
-}
+/* =========================
+   FORMULARIO EMPRESAS
+========================= */
 
 function sendCompanyRequest() {
   const rs = val("rs");
@@ -34,28 +58,28 @@ function sendCompanyRequest() {
 
   const msg = `Solicitud comercial — Mundo D&H
 
-🏢 Razón social: ${rs}
-🧾 RUT empresa: ${rut}
+Razón social: ${rs}
+RUT empresa: ${rut}
 
-👤 Contacto: ${contacto}
-📞 Teléfono: ${fono}
-✉️ Correo: ${email || "(no informado)"}
+Contacto: ${contacto}
+Teléfono: ${fono}
+Correo: ${email || "(no informado)"}
 
-📍 Comuna: ${comuna}
-📌 Dirección: ${direccion}
+Comuna: ${comuna}
+Dirección: ${direccion}
 
-📂 Tipo de atención: ${tipo}
-💳 Modalidad / plazo: ${plazo}
+Tipo de atención: ${tipo}
+Modalidad / plazo: ${plazo}
 
-🛒 Detalle del requerimiento:
+Detalle del requerimiento:
 ${detalle}
 
 Condiciones generales:
-• Atención comercial para empresas, pymes, oficinas, colegios e instituciones
-• Foco de cobertura: Gran Talcahuano
-• Entrega estimada de 2 a 4 días hábiles según disponibilidad
-• Crédito comercial sujeto a evaluación
-• Pago contra entrega disponible
+- Atención comercial para empresas, pymes, oficinas, colegios e instituciones
+- Foco de cobertura: Gran Talcahuano
+- Entrega estimada de 2 a 4 días hábiles según disponibilidad
+- Crédito comercial sujeto a evaluación
+- Pago contra entrega disponible
 
 Agradeceré confirmación de factibilidad, disponibilidad y pasos siguientes.`;
 
@@ -63,7 +87,7 @@ Agradeceré confirmación de factibilidad, disponibilidad y pasos siguientes.`;
 }
 
 function clearForm() {
-  ["rs", "rut", "contacto", "fono", "email", "comuna", "direccion", "detalle"].forEach(id => {
+  ["rs", "rut", "contacto", "fono", "email", "comuna", "direccion", "detalle"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -75,24 +99,35 @@ function clearForm() {
   if (plazo) plazo.value = "Pago contra entrega";
 }
 
+/* =========================
+   SLIDER GENÉRICO
+========================= */
+
 (function setupSlider() {
   const slider = document.getElementById("heroSlider");
   const dotsContainer = document.getElementById("heroDots");
+
   if (!slider || !dotsContainer) return;
 
   const slides = Array.from(slider.querySelectorAll(".slide"));
+  if (!slides.length) return;
+
   let current = 0;
   let timer = null;
 
   function renderDots() {
     dotsContainer.innerHTML = "";
+
     slides.forEach((_, index) => {
       const dot = document.createElement("button");
+      dot.type = "button";
       dot.className = index === current ? "active" : "";
+
       dot.addEventListener("click", () => {
         goTo(index);
         restart();
       });
+
       dotsContainer.appendChild(dot);
     });
   }
@@ -101,6 +136,7 @@ function clearForm() {
     slides.forEach((slide, i) => {
       slide.classList.toggle("active", i === index);
     });
+
     current = index;
     renderDots();
   }
@@ -143,32 +179,29 @@ function precioVenta(producto) {
 
 function badgeStock(stock) {
   const s = Number(stock || 0);
+
   if (s <= 0) return { texto: "Sin stock", clase: "out" };
   if (s <= 5) return { texto: "Stock bajo", clase: "low" };
+
   return { texto: "Disponible", clase: "" };
 }
 
 function imagenFallback(producto) {
-  const categoria = (producto.categoria || "").toLowerCase();
+  const categoria = safeText(producto.categoria).toLowerCase();
 
-  if (categoria.includes("aseo")) {
-    return "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=900&q=80";
-  }
-  if (categoria.includes("oficina")) {
-    return "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80";
-  }
-  if (categoria.includes("escolar")) {
-    return "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=80";
-  }
+  if (categoria.includes("aseo")) return "./assets/fallback-aseo.jpg";
+  if (categoria.includes("oficina")) return "./assets/fallback-oficina.jpg";
+  if (categoria.includes("escolar")) return "./assets/fallback-escolar.jpg";
 
-  return "https://via.placeholder.com/900x700/f1f5f9/334155?text=Mundo+D%26H";
+  return "./assets/fallback-producto.jpg";
 }
 
 function referenciaUnidad(producto) {
   const unidades = Number(producto.unidadesPorPack || 1);
   const venta = precioVenta(producto);
+  const tipoVenta = safeText(producto.tipoVenta).toLowerCase();
 
-  if ((producto.tipoVenta || "").toLowerCase() === "pack" && unidades > 1) {
+  if (tipoVenta === "pack" && unidades > 1) {
     return `Aprox. ${formatoPeso(Math.round(venta / unidades))} por unidad interna`;
   }
 
@@ -178,16 +211,35 @@ function referenciaUnidad(producto) {
 function linkProductoWhatsApp(producto) {
   const msg = `Hola, quiero cotizar este producto de Mundo D&H:
 
-SKU: ${producto.sku || "-"}
-Producto: ${producto.nombre || "-"}
-Marca: ${producto.marca || "-"}
-Unidad de venta: ${producto.unidad || "-"}
+SKU: ${safeText(producto.sku) || "-"}
+Producto: ${safeText(producto.nombre) || "-"}
+Marca: ${safeText(producto.marca) || "-"}
+Unidad de venta: ${safeText(producto.unidad) || "-"}
 Precio referencia: ${formatoPeso(precioVenta(producto))}
-Stock publicado: ${producto.stock ?? 0}
+Stock publicado: ${Number(producto.stock ?? 0)}
 
 Quedo atento a disponibilidad y condiciones comerciales.`;
 
   return `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(msg)}`;
+}
+
+function normalizarProducto(p) {
+  return {
+    ...p,
+    nombre: safeText(p.nombre),
+    marca: safeText(p.marca),
+    sku: safeText(p.sku),
+    unidad: safeText(p.unidad),
+    categoria: safeText(p.categoria),
+    descripcion: safeText(p.descripcion),
+    imagen: safeText(p.imagen),
+    tipoVenta: safeText(p.tipoVenta || "unidad"),
+    estado: safeText(p.estado || "activo").toLowerCase(),
+    precioNeto: Number(p.precioNeto || 0),
+    stock: Number(p.stock || 0),
+    unidadesPorPack: Number(p.unidadesPorPack || 1),
+    margen: Number(p.margen ?? 0.39)
+  };
 }
 
 async function cargarCatalogo() {
@@ -207,40 +259,38 @@ async function cargarCatalogo() {
 
   try {
     const response = await fetch("productos.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("No se pudo cargar productos.json");
-    productos = await response.json();
 
-    if (!Array.isArray(productos)) {
+    if (!response.ok) {
+      throw new Error("No se pudo cargar productos.json");
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
       throw new Error("productos.json no tiene formato de lista");
     }
+
+    productos = data
+      .filter((p) => p && typeof p === "object")
+      .map(normalizarProducto)
+      .filter((p) => p.precioNeto > 0);
   } catch (error) {
     console.error(error);
     grid.innerHTML = `
       <div class="empty-state">
         <h3>No se pudo cargar el catálogo</h3>
-        <p>Revisa que <strong>productos.json</strong> sea un JSON real y no un archivo Excel renombrado.</p>
+        <p>Revisa que <strong>productos.json</strong> exista y tenga formato JSON válido.</p>
       </div>
     `;
     return;
   }
 
-  productos = productos
-    .filter(p => p && typeof p === "object")
-    .filter(p => Number(p.precioNeto) > 0)
-    .map(p => ({
-      ...p,
-      precioNeto: Number(p.precioNeto || 0),
-      stock: Number(p.stock || 0),
-      unidadesPorPack: Number(p.unidadesPorPack || 1),
-      margen: Number(p.margen ?? 0.39)
-    }));
-
-  const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))].sort();
-  const marcas = [...new Set(productos.map(p => p.marca).filter(Boolean))].sort();
+  const categorias = [...new Set(productos.map((p) => p.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const marcas = [...new Set(productos.map((p) => p.marca).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
   if (categoryFilter) {
     categoryFilter.innerHTML = `<option value="">Todas las categorías</option>`;
-    categorias.forEach(cat => {
+    categorias.forEach((cat) => {
       const option = document.createElement("option");
       option.value = cat;
       option.textContent = cat;
@@ -250,12 +300,18 @@ async function cargarCatalogo() {
 
   if (brandFilter) {
     brandFilter.innerHTML = `<option value="">Todas las marcas</option>`;
-    marcas.forEach(marca => {
+    marcas.forEach((marca) => {
       const option = document.createElement("option");
       option.value = marca;
       option.textContent = marca;
       brandFilter.appendChild(option);
     });
+  }
+
+  function actualizarResumen(lista) {
+    if (summaryProducts) summaryProducts.textContent = String(lista.length);
+    if (summaryCategories) summaryCategories.textContent = String(new Set(lista.map((p) => p.categoria).filter(Boolean)).size);
+    if (summaryBrands) summaryBrands.textContent = String(new Set(lista.map((p) => p.marca).filter(Boolean)).size);
   }
 
   function render(lista) {
@@ -268,57 +324,58 @@ async function cargarCatalogo() {
           <p>Prueba con otra búsqueda o cambia los filtros.</p>
         </div>
       `;
-
-      if (summaryProducts) summaryProducts.textContent = "0";
-      if (summaryCategories) summaryCategories.textContent = "0";
-      if (summaryBrands) summaryBrands.textContent = "0";
+      actualizarResumen([]);
       return;
     }
 
-    lista.forEach(producto => {
+    lista.forEach((producto) => {
       const stock = badgeStock(producto.stock);
-      const imagen = (producto.imagen || "").trim() || imagenFallback(producto);
+      const imagen = producto.imagen || imagenFallback(producto);
 
       const card = document.createElement("article");
       card.className = "product-card";
 
       card.innerHTML = `
         <div class="product-image">
-          <span class="badge-top">${(producto.tipoVenta || "unidad").toUpperCase()}</span>
-          <span class="badge-stock ${stock.clase}">${stock.texto}</span>
-          <img src="${imagen}" alt="${producto.nombre}" loading="lazy"
-               onerror="this.src='https://via.placeholder.com/900x700/f1f5f9/334155?text=Mundo+D%26H';">
+          <span class="badge-top">${escapeHtml((producto.tipoVenta || "unidad").toUpperCase())}</span>
+          <span class="badge-stock ${escapeHtml(stock.clase)}">${escapeHtml(stock.texto)}</span>
+          <img
+            src="${escapeHtml(imagen)}"
+            alt="${escapeHtml(producto.nombre || "Producto Mundo D&H")}"
+            loading="lazy"
+            onerror="this.onerror=null;this.src='./assets/fallback-producto.jpg';"
+          >
         </div>
 
         <div class="product-body">
-          <div class="product-category">${producto.categoria || "Sin categoría"}</div>
-          <h3 class="product-name">${producto.nombre || "Producto"}</h3>
+          <div class="product-category">${escapeHtml(producto.categoria || "Sin categoría")}</div>
+          <h3 class="product-name">${escapeHtml(producto.nombre || "Producto")}</h3>
 
           <div class="product-meta">
-            <div><strong>SKU:</strong> ${producto.sku || "-"}</div>
-            <div><strong>Marca:</strong> ${producto.marca || "-"}</div>
-            <div><strong>Unidad:</strong> ${producto.unidad || "-"}</div>
-            <div><strong>Stock:</strong> ${producto.stock}</div>
-            <div>${producto.descripcion || ""}</div>
+            <div><strong>SKU:</strong> ${escapeHtml(producto.sku || "-")}</div>
+            <div><strong>Marca:</strong> ${escapeHtml(producto.marca || "-")}</div>
+            <div><strong>Unidad:</strong> ${escapeHtml(producto.unidad || "-")}</div>
+            <div><strong>Stock:</strong> ${escapeHtml(String(producto.stock))}</div>
+            <div>${escapeHtml(producto.descripcion || "")}</div>
           </div>
 
           <div class="product-prices">
             <div class="price-row">
               <span class="price-label">Precio</span>
-              <span class="price-sale">${formatoPeso(precioVenta(producto))}</span>
+              <span class="price-sale">${escapeHtml(formatoPeso(precioVenta(producto)))}</span>
             </div>
             <div class="price-row">
               <span class="price-label">Referencia</span>
-              <span class="price-value">${referenciaUnidad(producto)}</span>
+              <span class="price-value">${escapeHtml(referenciaUnidad(producto))}</span>
             </div>
           </div>
 
           <div class="product-actions">
-            <a class="btn-product btn-wa" href="${linkProductoWhatsApp(producto)}" target="_blank" rel="noopener">
+            <a class="btn-product btn-wa" href="${linkProductoWhatsApp(producto)}" target="_blank" rel="noopener noreferrer">
               Cotizar por WhatsApp
             </a>
             <button class="btn-product btn-secondary-lite" type="button">
-              ${(producto.tipoVenta || "unidad").toLowerCase() === "pack" ? "Venta por pack / bobina" : "Venta unitaria"}
+              ${escapeHtml((producto.tipoVenta || "unidad").toLowerCase() === "pack" ? "Venta por pack / bobina" : "Venta unitaria")}
             </button>
           </div>
         </div>
@@ -327,25 +384,23 @@ async function cargarCatalogo() {
       grid.appendChild(card);
     });
 
-    if (summaryProducts) summaryProducts.textContent = String(lista.length);
-    if (summaryCategories) summaryCategories.textContent = String(new Set(lista.map(p => p.categoria).filter(Boolean)).size);
-    if (summaryBrands) summaryBrands.textContent = String(new Set(lista.map(p => p.marca).filter(Boolean)).size);
+    actualizarResumen(lista);
   }
 
   function aplicarFiltros() {
-    const texto = (searchInput?.value || "").trim().toLowerCase();
-    const categoria = categoryFilter?.value || "";
-    const marca = brandFilter?.value || "";
-    const filtroStock = stockFilter?.value || "";
+    const texto = safeText(searchInput?.value).toLowerCase();
+    const categoria = safeText(categoryFilter?.value);
+    const marca = safeText(brandFilter?.value);
+    const filtroStock = safeText(stockFilter?.value);
 
-    const filtrados = productos.filter(producto => {
+    const filtrados = productos.filter((producto) => {
       if (producto.estado && producto.estado !== "activo") return false;
 
       const coincideTexto =
         !texto ||
-        (producto.nombre || "").toLowerCase().includes(texto) ||
-        (producto.marca || "").toLowerCase().includes(texto) ||
-        (producto.sku || "").toLowerCase().includes(texto);
+        producto.nombre.toLowerCase().includes(texto) ||
+        producto.marca.toLowerCase().includes(texto) ||
+        producto.sku.toLowerCase().includes(texto);
 
       const coincideCategoria = !categoria || producto.categoria === categoria;
       const coincideMarca = !marca || producto.marca === marca;
@@ -366,7 +421,9 @@ async function cargarCatalogo() {
   brandFilter?.addEventListener("change", aplicarFiltros);
   stockFilter?.addEventListener("change", aplicarFiltros);
 
-  render(productos.filter(p => !p.estado || p.estado === "activo"));
+  render(productos.filter((p) => p.estado === "activo"));
 }
 
-document.addEventListener("DOMContentLoaded", cargarCatalogo);
+document.addEventListener("DOMContentLoaded", () => {
+  cargarCatalogo();
+});
