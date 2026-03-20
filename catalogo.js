@@ -18,20 +18,23 @@ async function cargarProductos() {
 }
 
 function llenarFiltros() {
-  const categorias = [...new Set(productos.map(p => p.categoria))];
-  const marcas = [...new Set(productos.map(p => p.marca))];
+  const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))];
+  const marcas = [...new Set(productos.map(p => p.marca).filter(Boolean))];
 
   const catSelect = document.getElementById("categoryFilter");
   const brandSelect = document.getElementById("brandFilter");
 
-  categorias.forEach(c => {
+  catSelect.innerHTML = `<option value="">Todas las categorías</option>`;
+  brandSelect.innerHTML = `<option value="">Todas las marcas</option>`;
+
+  categorias.sort().forEach(c => {
     const op = document.createElement("option");
     op.value = c;
     op.textContent = c;
     catSelect.appendChild(op);
   });
 
-  marcas.forEach(m => {
+  marcas.sort().forEach(m => {
     const op = document.createElement("option");
     op.value = m;
     op.textContent = m;
@@ -39,8 +42,16 @@ function llenarFiltros() {
   });
 }
 
-function calcularPrecio(p) {
-  return Math.round(p.precioNeto * (1 + p.margen));
+function calcularCostoConIva(p) {
+  return Math.round(p.precioNeto * 1.19);
+}
+
+function calcularPrecioVenta(p) {
+  return Math.round(calcularCostoConIva(p) * (1 + p.margen));
+}
+
+function calcularGanancia(p) {
+  return calcularPrecioVenta(p) - calcularCostoConIva(p);
 }
 
 function getStockClass(stock) {
@@ -54,21 +65,29 @@ function renderProductos() {
   grid.innerHTML = "";
 
   if (filtrados.length === 0) {
-    grid.innerHTML = `<div class="empty-state">No hay productos</div>`;
+    grid.innerHTML = `<div class="empty-state">No hay productos disponibles</div>`;
     return;
   }
 
   filtrados.forEach(p => {
-    const precio = calcularPrecio(p);
+    const costoConIva = calcularCostoConIva(p);
+    const precioVenta = calcularPrecioVenta(p);
+    const ganancia = calcularGanancia(p);
 
     const img = p.imagen || "./assets/fallback-producto.jpg";
+
+    const mensaje = `Hola, quiero cotizar este producto:
+Producto: ${p.nombre}
+SKU: ${p.sku}
+Marca: ${p.marca}
+Precio publicado: $${precioVenta.toLocaleString("es-CL")}`;
 
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image">
-        <img src="${img}" onerror="this.src='./assets/fallback-producto.jpg'"/>
+        <img src="${img}" alt="${p.nombre}" onerror="this.src='./assets/fallback-producto.jpg'"/>
         <div class="badge-top">${p.marca}</div>
         <div class="badge-stock ${getStockClass(p.stock)}">
           ${p.stock <= 0 ? "Sin stock" : p.stock <= 5 ? "Stock bajo" : "Disponible"}
@@ -80,23 +99,33 @@ function renderProductos() {
         <h3 class="product-name">${p.nombre}</h3>
 
         <div class="product-meta">
-          <div>${p.unidad}</div>
+          <div>${p.unidad || "UNI"}</div>
           <div>SKU: ${p.sku}</div>
         </div>
 
         <div class="product-prices">
           <div class="price-row">
-            <span class="price-label">Precio</span>
-            <span class="price-sale">$${precio.toLocaleString()}</span>
+            <span class="price-label">Costo con IVA</span>
+            <span class="price-base">$${costoConIva.toLocaleString("es-CL")}</span>
+          </div>
+
+          <div class="price-row">
+            <span class="price-label">Precio venta</span>
+            <span class="price-sale">$${precioVenta.toLocaleString("es-CL")}</span>
+          </div>
+
+          <div class="price-row saving-row">
+            <span class="price-label">Margen estimado</span>
+            <span class="price-saving">$${ganancia.toLocaleString("es-CL")}</span>
           </div>
         </div>
 
         <div class="product-actions">
-          <a class="btn-product btn-wa"
-            href="https://wa.me/${PHONE}?text=${encodeURIComponent(
-              `Hola, quiero cotizar:\n${p.nombre}\nSKU: ${p.sku}\nPrecio: $${precio}`
-            )}"
+          <a
+            class="btn-product btn-wa"
+            href="https://wa.me/${PHONE}?text=${encodeURIComponent(mensaje)}"
             target="_blank"
+            rel="noopener noreferrer"
           >
             Cotizar por WhatsApp
           </a>
@@ -109,7 +138,7 @@ function renderProductos() {
 }
 
 function aplicarFiltros() {
-  const search = document.getElementById("searchInput").value.toLowerCase();
+  const search = document.getElementById("searchInput").value.toLowerCase().trim();
   const categoria = document.getElementById("categoryFilter").value;
   const marca = document.getElementById("brandFilter").value;
   const stock = document.getElementById("stockFilter").value;
@@ -117,7 +146,20 @@ function aplicarFiltros() {
   filtrados = productos.filter(p => {
     if (p.estado !== "activo") return false;
 
-    if (search && !p.nombre.toLowerCase().includes(search)) return false;
+    if (search) {
+      const nombre = (p.nombre || "").toLowerCase();
+      const sku = (p.sku || "").toLowerCase();
+      const marcaTxt = (p.marca || "").toLowerCase();
+
+      if (
+        !nombre.includes(search) &&
+        !sku.includes(search) &&
+        !marcaTxt.includes(search)
+      ) {
+        return false;
+      }
+    }
+
     if (categoria && p.categoria !== categoria) return false;
     if (marca && p.marca !== marca) return false;
 
