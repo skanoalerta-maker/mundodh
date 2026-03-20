@@ -6,7 +6,9 @@ let filtrados = [];
 async function cargarProductos() {
   try {
     const res = await fetch("productos.json");
-    productos = await res.json();
+    const data = await res.json();
+
+    productos = Array.isArray(data.productos) ? data.productos : [];
     filtrados = productos.filter(p => p.estado === "activo");
 
     llenarFiltros();
@@ -14,27 +16,34 @@ async function cargarProductos() {
     actualizarResumen();
   } catch (e) {
     console.error("Error cargando productos:", e);
+
+    const grid = document.getElementById("catalogGrid");
+    if (grid) {
+      grid.innerHTML = `<div class="empty-state">No se pudo cargar el catálogo</div>`;
+    }
   }
 }
 
 function llenarFiltros() {
-  const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))];
-  const marcas = [...new Set(productos.map(p => p.marca).filter(Boolean))];
+  const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))].sort();
+  const marcas = [...new Set(productos.map(p => p.marca).filter(Boolean))].sort();
 
   const catSelect = document.getElementById("categoryFilter");
   const brandSelect = document.getElementById("brandFilter");
 
+  if (!catSelect || !brandSelect) return;
+
   catSelect.innerHTML = `<option value="">Todas las categorías</option>`;
   brandSelect.innerHTML = `<option value="">Todas las marcas</option>`;
 
-  categorias.sort().forEach(c => {
+  categorias.forEach(c => {
     const op = document.createElement("option");
     op.value = c;
     op.textContent = c;
     catSelect.appendChild(op);
   });
 
-  marcas.sort().forEach(m => {
+  marcas.forEach(m => {
     const op = document.createElement("option");
     op.value = m;
     op.textContent = m;
@@ -42,16 +51,27 @@ function llenarFiltros() {
   });
 }
 
-function calcularCostoConIva(p) {
-  return Math.round(p.precioNeto * 1.19);
+function calcularPrecio(p) {
+  if (typeof p.precio_web_con_iva === "number") {
+    return Math.round(p.precio_web_con_iva);
+  }
+
+  if (typeof p.precio === "number") {
+    return Math.round(p.precio);
+  }
+
+  if (typeof p.precio_proveedor_neto === "number") {
+    const costoConIva = p.precio_proveedor_neto * 1.19;
+    const margen = typeof p.margen === "number" ? p.margen : 0.2;
+    return Math.round(costoConIva * (1 + margen));
+  }
+
+  return 0;
 }
 
-function calcularPrecioVenta(p) {
-  return Math.round(calcularCostoConIva(p) * (1 + p.margen));
-}
-
-function calcularGanancia(p) {
-  return calcularPrecioVenta(p) - calcularCostoConIva(p);
+function getStockValue(p) {
+  if (typeof p.stock === "number") return p.stock;
+  return 100;
 }
 
 function getStockClass(stock) {
@@ -60,70 +80,70 @@ function getStockClass(stock) {
   return "";
 }
 
+function getStockText(stock) {
+  if (stock <= 0) return "Sin stock";
+  if (stock <= 5) return "Stock bajo";
+  return "Disponible";
+}
+
 function renderProductos() {
   const grid = document.getElementById("catalogGrid");
+  if (!grid) return;
+
   grid.innerHTML = "";
 
   if (filtrados.length === 0) {
-    grid.innerHTML = `<div class="empty-state">No hay productos disponibles</div>`;
+    grid.innerHTML = `<div class="empty-state">No hay productos</div>`;
     return;
   }
 
   filtrados.forEach(p => {
-    const costoConIva = calcularCostoConIva(p);
-    const precioVenta = calcularPrecioVenta(p);
-    const ganancia = calcularGanancia(p);
+    const precio = calcularPrecio(p);
+    const stock = getStockValue(p);
+    const img = p.imagen && String(p.imagen).trim() !== ""
+      ? p.imagen
+      : "./assets/fallback-producto.jpg";
 
-    const img = p.imagen || "./assets/fallback-producto.jpg";
-
-    const mensaje = `Hola, quiero cotizar este producto:
-Producto: ${p.nombre}
-SKU: ${p.sku}
-Marca: ${p.marca}
-Precio publicado: $${precioVenta.toLocaleString("es-CL")}`;
+    const codigo = p.codigo || "";
+    const nombre = p.nombre || "Producto sin nombre";
+    const marca = p.marca || "Sin marca";
+    const categoria = p.categoria || "Sin categoría";
+    const unidad = p.unidad || "UNI";
 
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <div class="product-image">
-        <img src="${img}" alt="${p.nombre}" onerror="this.src='./assets/fallback-producto.jpg'"/>
-        <div class="badge-top">${p.marca}</div>
-        <div class="badge-stock ${getStockClass(p.stock)}">
-          ${p.stock <= 0 ? "Sin stock" : p.stock <= 5 ? "Stock bajo" : "Disponible"}
+        <img src="${img}" alt="${nombre}" onerror="this.src='./assets/fallback-producto.jpg'"/>
+        <div class="badge-top">${marca}</div>
+        <div class="badge-stock ${getStockClass(stock)}">
+          ${getStockText(stock)}
         </div>
       </div>
 
       <div class="product-body">
-        <div class="product-category">${p.categoria}</div>
-        <h3 class="product-name">${p.nombre}</h3>
+        <div class="product-category">${categoria}</div>
+        <h3 class="product-name">${nombre}</h3>
 
         <div class="product-meta">
-          <div>${p.unidad || "UNI"}</div>
-          <div>SKU: ${p.sku}</div>
+          <div>${unidad}</div>
+          <div>SKU: ${codigo}</div>
         </div>
 
         <div class="product-prices">
           <div class="price-row">
-            <span class="price-label">Costo con IVA</span>
-            <span class="price-base">$${costoConIva.toLocaleString("es-CL")}</span>
-          </div>
-
-          <div class="price-row">
-            <span class="price-label">Precio venta</span>
-            <span class="price-sale">$${precioVenta.toLocaleString("es-CL")}</span>
-          </div>
-
-          <div class="price-row saving-row">
-            <span class="price-label">Margen estimado</span>
-            <span class="price-saving">$${ganancia.toLocaleString("es-CL")}</span>
+            <span class="price-label">Precio</span>
+            <span class="price-sale">$${precio.toLocaleString("es-CL")}</span>
           </div>
         </div>
 
         <div class="product-actions">
           <a
             class="btn-product btn-wa"
-            href="https://wa.me/${PHONE}?text=${encodeURIComponent(mensaje)}"
+            href="https://wa.me/${PHONE}?text=${encodeURIComponent(
+              `Hola, quiero cotizar:\n${nombre}\nSKU: ${codigo}\nPrecio: $${precio.toLocaleString("es-CL")}`
+            )}"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -138,34 +158,29 @@ Precio publicado: $${precioVenta.toLocaleString("es-CL")}`;
 }
 
 function aplicarFiltros() {
-  const search = document.getElementById("searchInput").value.toLowerCase().trim();
-  const categoria = document.getElementById("categoryFilter").value;
-  const marca = document.getElementById("brandFilter").value;
-  const stock = document.getElementById("stockFilter").value;
+  const search = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+  const categoria = document.getElementById("categoryFilter")?.value || "";
+  const marca = document.getElementById("brandFilter")?.value || "";
+  const stockFiltro = document.getElementById("stockFilter")?.value || "";
 
   filtrados = productos.filter(p => {
     if (p.estado !== "activo") return false;
 
-    if (search) {
-      const nombre = (p.nombre || "").toLowerCase();
-      const sku = (p.sku || "").toLowerCase();
-      const marcaTxt = (p.marca || "").toLowerCase();
+    const nombre = (p.nombre || "").toLowerCase();
+    const codigo = String(p.codigo || "").toLowerCase();
+    const marcaTxt = (p.marca || "").toLowerCase();
+    const stock = getStockValue(p);
 
-      if (
-        !nombre.includes(search) &&
-        !sku.includes(search) &&
-        !marcaTxt.includes(search)
-      ) {
-        return false;
-      }
+    if (search && !nombre.includes(search) && !codigo.includes(search) && !marcaTxt.includes(search)) {
+      return false;
     }
 
     if (categoria && p.categoria !== categoria) return false;
     if (marca && p.marca !== marca) return false;
 
-    if (stock === "con" && p.stock <= 0) return false;
-    if (stock === "bajo" && (p.stock > 5 || p.stock <= 0)) return false;
-    if (stock === "sin" && p.stock > 0) return false;
+    if (stockFiltro === "con" && stock <= 0) return false;
+    if (stockFiltro === "bajo" && (stock > 5 || stock <= 0)) return false;
+    if (stockFiltro === "sin" && stock > 0) return false;
 
     return true;
   });
@@ -175,18 +190,22 @@ function aplicarFiltros() {
 }
 
 function actualizarResumen() {
-  document.getElementById("summaryProducts").textContent = filtrados.length;
+  const summaryProducts = document.getElementById("summaryProducts");
+  const summaryCategories = document.getElementById("summaryCategories");
+  const summaryBrands = document.getElementById("summaryBrands");
 
-  const categorias = new Set(filtrados.map(p => p.categoria));
-  const marcas = new Set(filtrados.map(p => p.marca));
+  if (summaryProducts) summaryProducts.textContent = filtrados.length;
 
-  document.getElementById("summaryCategories").textContent = categorias.size;
-  document.getElementById("summaryBrands").textContent = marcas.size;
+  const categorias = new Set(filtrados.map(p => p.categoria).filter(Boolean));
+  const marcas = new Set(filtrados.map(p => p.marca).filter(Boolean));
+
+  if (summaryCategories) summaryCategories.textContent = categorias.size;
+  if (summaryBrands) summaryBrands.textContent = marcas.size;
 }
 
-document.getElementById("searchInput").addEventListener("input", aplicarFiltros);
-document.getElementById("categoryFilter").addEventListener("change", aplicarFiltros);
-document.getElementById("brandFilter").addEventListener("change", aplicarFiltros);
-document.getElementById("stockFilter").addEventListener("change", aplicarFiltros);
+document.getElementById("searchInput")?.addEventListener("input", aplicarFiltros);
+document.getElementById("categoryFilter")?.addEventListener("change", aplicarFiltros);
+document.getElementById("brandFilter")?.addEventListener("change", aplicarFiltros);
+document.getElementById("stockFilter")?.addEventListener("change", aplicarFiltros);
 
 cargarProductos();
