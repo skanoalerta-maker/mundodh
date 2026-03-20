@@ -17,6 +17,7 @@
     :root{
       --brand:#c8102e;
       --brand-dark:#9f0f25;
+      --brand-soft:#fff1f3;
       --ink:#132033;
       --muted:#5f6c7b;
       --line:#dbe3ee;
@@ -24,6 +25,7 @@
       --card:#ffffff;
       --wa:#128C7E;
       --wa-dark:#0f766a;
+      --yellow:#ffd84d;
       --shadow:0 16px 40px rgba(20,32,51,.08);
       --shadow-soft:0 10px 24px rgba(20,32,51,.05);
       --radius-xl:28px;
@@ -34,6 +36,7 @@
 
     *{ box-sizing:border-box; }
     html{ scroll-behavior:smooth; }
+
     body{
       margin:0;
       font-family:Inter, Arial, Helvetica, sans-serif;
@@ -52,9 +55,10 @@
     }
 
     .topbar{
-      background:#132033;
+      background:linear-gradient(90deg, var(--brand) 0%, var(--brand-dark) 100%);
       color:#fff;
       font-size:13px;
+      box-shadow:0 8px 20px rgba(159,15,37,.14);
     }
 
     .topbar-inner{
@@ -75,11 +79,13 @@
     }
 
     .header{
-      background:#fff;
-      border-bottom:1px solid #edf1f6;
+      background:rgba(255,255,255,.96);
+      border-bottom:1px solid #f1d7dd;
       position:sticky;
       top:0;
       z-index:30;
+      backdrop-filter:blur(10px);
+      box-shadow:0 8px 22px rgba(20,32,51,.05);
     }
 
     .nav{
@@ -98,7 +104,7 @@
     }
 
     .brand-logo{
-      height:54px;
+      height:56px;
       width:auto;
       object-fit:contain;
     }
@@ -115,6 +121,7 @@
       text-decoration:none;
       font-weight:700;
       font-size:15px;
+      transition:.18s ease;
     }
 
     .menu a:hover{
@@ -136,7 +143,7 @@
     }
 
     .btn-yellow{
-      background:#ffd84d;
+      background:var(--yellow);
       color:#132033;
       box-shadow:0 12px 24px rgba(255,216,77,.28);
     }
@@ -275,6 +282,11 @@
       box-shadow:var(--shadow-soft);
       text-align:center;
       transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .summary-card:hover{
+      transform:translateY(-3px);
+      box-shadow:var(--shadow);
     }
 
     .summary-card strong{
@@ -422,7 +434,7 @@
       min-width:24px;
       height:24px;
       border-radius:999px;
-      background:#ffd84d;
+      background:var(--yellow);
       color:#132033;
       font-size:12px;
       font-weight:900;
@@ -440,7 +452,9 @@
     }
 
     .footer{
-      background:#132033;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.08), transparent 20%),
+        linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
       color:#fff;
       padding:40px 0;
     }
@@ -470,6 +484,87 @@
       height:58px;
       width:auto;
       margin-bottom:10px;
+    }
+
+    .qty-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .qty-box{
+      display:inline-flex;
+      align-items:center;
+      border:1px solid #dbe3ee;
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .qty-btn{
+      width:38px;
+      height:38px;
+      border:none;
+      background:#f4f7fb;
+      color:#132033;
+      font-weight:900;
+      font-size:18px;
+      cursor:pointer;
+    }
+
+    .qty-btn:hover{
+      background:#e8eef6;
+    }
+
+    .qty-input{
+      width:72px;
+      height:38px;
+      border:none;
+      text-align:center;
+      font-weight:800;
+      color:#132033;
+      outline:none;
+    }
+
+    .btn-add-cart{
+      background:var(--brand);
+      color:#fff;
+      box-shadow:0 12px 24px rgba(200,16,46,.18);
+    }
+
+    .btn-add-cart:hover{
+      background:#a70e27;
+    }
+
+    .cart-item-row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .cart-item-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
+      flex-wrap:wrap;
+    }
+
+    .cart-mini-btn{
+      border:none;
+      border-radius:10px;
+      background:#f4f7fb;
+      color:#132033;
+      padding:6px 10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .cart-mini-btn:hover{
+      background:#e8eef6;
     }
 
     @media (max-width:1100px){
@@ -582,6 +677,11 @@
       .floating-cart{
         display:block;
       }
+
+      .qty-row{
+        flex-direction:column;
+        align-items:stretch;
+      }
     }
   </style>
 </head>
@@ -633,11 +733,8 @@
 
             <div class="catalog-tools">
               <input type="text" id="searchInput" placeholder="Buscar producto..." />
-
               <select id="categoryFilter"></select>
-
               <select id="brandFilter"></select>
-
               <select id="stockFilter">
                 <option value="">Todo stock</option>
                 <option value="con">Disponible</option>
@@ -664,8 +761,8 @@
             </div>
 
             <div class="summary-card">
-              <strong>Catálogo</strong>
-              <span>Actualizado</span>
+              <strong>Pedido</strong>
+              <span>Carrito activo</span>
             </div>
           </section>
 
@@ -680,12 +777,13 @@
           <div class="side-card">
             <h3>Compra más simple</h3>
             <p>
-              Agrega productos y prepara tu pedido para enviarlo por WhatsApp en un solo mensaje.
+              Agrega productos, define cantidades y prepara tu pedido para enviarlo por WhatsApp en un solo mensaje.
             </p>
           </div>
 
           <div class="side-card">
             <h3>Pedido actual <span id="cartCount" class="cart-badge">0</span></h3>
+
             <div id="cartItems" class="cart-list">
               <div class="cart-empty">Aún no agregas productos al pedido.</div>
             </div>
