@@ -2,6 +2,7 @@ const PHONE = "56954486171";
 
 let productos = [];
 let filtrados = [];
+let carrito = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   iniciarCatalogo();
@@ -10,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function iniciarCatalogo() {
   await cargarProductos();
   conectarFiltros();
+  conectarCarrito();
+  renderCarrito();
 }
 
 async function cargarProductos() {
@@ -29,7 +32,6 @@ async function cargarProductos() {
     }
 
     productos = data;
-
     filtrados = productos.filter(esProductoActivo);
 
     llenarFiltros();
@@ -50,15 +52,22 @@ async function cargarProductos() {
 }
 
 function conectarFiltros() {
-  const searchInput = document.getElementById("searchInput");
-  const categoryFilter = document.getElementById("categoryFilter");
-  const brandFilter = document.getElementById("brandFilter");
-  const stockFilter = document.getElementById("stockFilter");
+  document.getElementById("searchInput")?.addEventListener("input", aplicarFiltros);
+  document.getElementById("categoryFilter")?.addEventListener("change", aplicarFiltros);
+  document.getElementById("brandFilter")?.addEventListener("change", aplicarFiltros);
+  document.getElementById("stockFilter")?.addEventListener("change", aplicarFiltros);
+}
 
-  searchInput?.addEventListener("input", aplicarFiltros);
-  categoryFilter?.addEventListener("change", aplicarFiltros);
-  brandFilter?.addEventListener("change", aplicarFiltros);
-  stockFilter?.addEventListener("change", aplicarFiltros);
+function conectarCarrito() {
+  document.getElementById("sendCartBtn")?.addEventListener("click", enviarPedidoWhatsApp);
+  document.getElementById("clearCartBtn")?.addEventListener("click", vaciarCarrito);
+
+  document.getElementById("floatingCartBtn")?.addEventListener("click", () => {
+    const sidebar = document.querySelector(".catalog-sidebar");
+    if (sidebar) {
+      sidebar.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
 }
 
 function esProductoActivo(producto) {
@@ -73,7 +82,6 @@ function esProductoActivo(producto) {
   if (estado === "activo") return true;
   if (estado === "active") return true;
   if (estado === "true") return true;
-
   return false;
 }
 
@@ -224,15 +232,164 @@ function renderProductos() {
             </div>
           </div>
 
-          <div class="product-actions">
-            <button class="btn-product btn-wa" type="button" onclick="cotizarProducto(${index})">
-              Cotizar por WhatsApp
+          <div class="qty-row">
+            <div class="qty-box">
+              <button class="qty-btn" type="button" onclick="cambiarCantidadVista(${index}, -1)">−</button>
+              <input id="qty-${index}" class="qty-input" type="number" min="1" step="1" value="1" />
+              <button class="qty-btn" type="button" onclick="cambiarCantidadVista(${index}, 1)">+</button>
+            </div>
+
+            <button class="btn-product btn-add-cart" type="button" onclick="agregarAlPedido(${index})">
+              Agregar
             </button>
           </div>
         </div>
       </article>
     `;
   }).join("");
+}
+
+function cambiarCantidadVista(index, delta) {
+  const input = document.getElementById(`qty-${index}`);
+  if (!input) return;
+
+  let valor = parseInt(input.value || "1", 10);
+  if (Number.isNaN(valor) || valor < 1) valor = 1;
+
+  valor += delta;
+  if (valor < 1) valor = 1;
+
+  input.value = valor;
+}
+
+function agregarAlPedido(index) {
+  const producto = filtrados[index];
+  if (!producto) return;
+
+  const input = document.getElementById(`qty-${index}`);
+  let cantidad = parseInt(input?.value || "1", 10);
+
+  if (Number.isNaN(cantidad) || cantidad < 1) {
+    cantidad = 1;
+  }
+
+  const key = obtenerClaveProducto(producto);
+  const existente = carrito.find(item => item.key === key);
+
+  if (existente) {
+    existente.cantidad += cantidad;
+  } else {
+    carrito.push({
+      key,
+      nombre: obtenerNombre(producto),
+      marca: obtenerMarca(producto),
+      categoria: obtenerCategoria(producto),
+      sku: obtenerSku(producto),
+      precio: obtenerPrecio(producto),
+      stock: obtenerStockTexto(producto),
+      cantidad
+    });
+  }
+
+  if (input) input.value = "1";
+  renderCarrito();
+}
+
+function renderCarrito() {
+  const cartItems = document.getElementById("cartItems");
+  const cartCount = document.getElementById("cartCount");
+  const floatingCartCount = document.getElementById("floatingCartCount");
+
+  const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+
+  if (cartCount) cartCount.textContent = totalItems;
+  if (floatingCartCount) floatingCartCount.textContent = totalItems;
+
+  if (!cartItems) return;
+
+  if (!carrito.length) {
+    cartItems.innerHTML = `
+      <div class="cart-empty">Aún no agregas productos al pedido.</div>
+    `;
+    return;
+  }
+
+  cartItems.innerHTML = carrito.map((item, index) => `
+    <div class="cart-item">
+      <div class="cart-item-row">
+        <div>
+          <strong>${escapeHtml(item.nombre)}</strong>
+          <span>${item.sku ? `SKU: ${escapeHtml(item.sku)}` : "Sin SKU"}</span>
+          <span>${item.marca ? `Marca: ${escapeHtml(item.marca)}` : ""}</span>
+          <span>Cantidad: ${item.cantidad} unidades</span>
+        </div>
+      </div>
+
+      <div class="cart-item-actions">
+        <button class="cart-mini-btn" type="button" onclick="restarCarrito(${index})">−</button>
+        <button class="cart-mini-btn" type="button" onclick="sumarCarrito(${index})">+</button>
+        <button class="cart-mini-btn" type="button" onclick="eliminarDelCarrito(${index})">Quitar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function sumarCarrito(index) {
+  if (!carrito[index]) return;
+  carrito[index].cantidad += 1;
+  renderCarrito();
+}
+
+function restarCarrito(index) {
+  if (!carrito[index]) return;
+
+  carrito[index].cantidad -= 1;
+
+  if (carrito[index].cantidad <= 0) {
+    carrito.splice(index, 1);
+  }
+
+  renderCarrito();
+}
+
+function eliminarDelCarrito(index) {
+  if (!carrito[index]) return;
+  carrito.splice(index, 1);
+  renderCarrito();
+}
+
+function vaciarCarrito() {
+  carrito = [];
+  renderCarrito();
+}
+
+function enviarPedidoWhatsApp() {
+  if (!carrito.length) {
+    alert("Primero agrega productos al pedido.");
+    return;
+  }
+
+  const lineas = carrito.map(item => {
+    const partes = [
+      `- ${item.nombre}`,
+      item.sku ? `SKU: ${item.sku}` : "",
+      item.marca ? `Marca: ${item.marca}` : "",
+      `Cantidad: ${item.cantidad} unidades`
+    ].filter(Boolean);
+
+    return partes.join(" | ");
+  });
+
+  const mensaje = [
+    "Hola, quiero hacer el siguiente pedido de Mundo D&H:",
+    "",
+    ...lineas,
+    "",
+    "Quedo atento(a) a confirmación de stock, precios y coordinación."
+  ].join("\n");
+
+  const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function actualizarResumen() {
@@ -251,6 +408,13 @@ function actualizarResumen() {
   if (summaryProducts) summaryProducts.textContent = filtrados.length;
   if (summaryCategories) summaryCategories.textContent = categorias.size;
   if (summaryBrands) summaryBrands.textContent = marcas.size;
+}
+
+function obtenerClaveProducto(producto) {
+  return (
+    obtenerSku(producto) ||
+    `${obtenerNombre(producto)}-${obtenerMarca(producto)}-${obtenerCategoria(producto)}`
+  );
 }
 
 function cotizarProducto(index) {
