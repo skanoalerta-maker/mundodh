@@ -35,6 +35,10 @@ async function cargarProductos() {
       throw new Error("productos.json no contiene un arreglo válido ni una propiedad 'productos'");
     }
 
+    if (!productos.length) {
+      throw new Error("productos.json no contiene productos");
+    }
+
     filtrados = productos.filter(esProductoActivo);
 
     llenarFiltros();
@@ -420,34 +424,6 @@ function obtenerClaveProducto(producto) {
   );
 }
 
-function cotizarProducto(index) {
-  const producto = filtrados[index];
-  if (!producto) return;
-
-  const nombre = obtenerNombre(producto);
-  const marca = obtenerMarca(producto);
-  const categoria = obtenerCategoria(producto);
-  const sku = obtenerSku(producto);
-  const precio = formatearPrecio(obtenerPrecio(producto));
-  const stock = obtenerStockTexto(producto);
-
-  const mensaje = [
-    "Hola, quiero cotizar este producto de Mundo D&H:",
-    "",
-    `Producto: ${nombre}`,
-    marca ? `Marca: ${marca}` : "",
-    categoria ? `Categoría: ${categoria}` : "",
-    sku ? `SKU: ${sku}` : "",
-    `Precio: ${precio}`,
-    `Stock: ${stock}`,
-    "",
-    "Quedo atento(a) a disponibilidad y coordinación del pedido."
-  ].filter(Boolean).join("\n");
-
-  const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(mensaje)}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
 function obtenerNombre(producto) {
   return (
     producto.nombre ||
@@ -497,7 +473,7 @@ function obtenerDescripcion(producto) {
 }
 
 function obtenerImagen(producto) {
-  return (
+  const imagenReal = (
     producto.imagen ||
     producto.image ||
     producto.foto ||
@@ -505,6 +481,53 @@ function obtenerImagen(producto) {
     producto.imagen_url ||
     ""
   ).toString().trim();
+
+  if (imagenReal) return imagenReal;
+
+  return obtenerImagenFallback(producto);
+}
+
+function obtenerImagenFallback(producto) {
+  const categoria = obtenerCategoria(producto).toLowerCase();
+  const nombre = obtenerNombre(producto).toLowerCase();
+
+  if (categoria.includes("aseo")) {
+    return "https://images.unsplash.com/photo-1585421514738-01798e348b17?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (categoria.includes("oficina") || categoria.includes("papeler")) {
+    return "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (categoria.includes("tecnolog")) {
+    return "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (categoria.includes("ferreter")) {
+    return "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (categoria.includes("hogar")) {
+    return "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (categoria.includes("escolar")) {
+    return "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (nombre.includes("basura") || nombre.includes("esponja") || nombre.includes("atomizador")) {
+    return "https://images.unsplash.com/photo-1585421514738-01798e348b17?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (nombre.includes("alargador") || nombre.includes("cable") || nombre.includes("adaptador")) {
+    return "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80";
+  }
+
+  if (nombre.includes("lapiz") || nombre.includes("marcador") || nombre.includes("cuaderno") || nombre.includes("goma")) {
+    return "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80";
+  }
+
+  return "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=800&q=80";
 }
 
 function obtenerPrecio(producto) {
@@ -525,11 +548,10 @@ function obtenerStockTexto(producto) {
     producto.stock ??
     producto.disponibilidad ??
     producto.estado_stock ??
-    "Disponible"
+    ""
   ).toString().trim();
 
-  if (!stock) return "Disponible";
-  return stock;
+  return stock || "Disponible";
 }
 
 function obtenerStockClase(producto) {
