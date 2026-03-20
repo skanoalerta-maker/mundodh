@@ -16,7 +16,6 @@ async function cargarProductos() {
     actualizarResumen();
   } catch (e) {
     console.error("Error cargando productos:", e);
-
     const grid = document.getElementById("catalogGrid");
     if (grid) {
       grid.innerHTML = `<div class="empty-state">No se pudo cargar el catálogo</div>`;
