@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empresas | Mundo D&H</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      background:#f5f7fb;
+    }
+
+    header{
+      background: linear-gradient(90deg,#c8102e,#e11d48);
+      color:#fff;
+      padding:14px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .logo{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .logo img{
+      width:45px;
+      height:45px;
+      object-fit:contain;
+    }
+
+    nav a{
+      color:#fff;
+      margin-left:18px;
+      text-decoration:none;
+      font-weight:bold;
+    }
+
+    .container{
+      max-width:1100px;
+      margin:40px auto;
+      padding:0 16px;
+    }
+
+    .hero{
+      background:#fff;
+      border-radius:16px;
+      padding:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+      margin-bottom:30px;
+    }
+
+    .hero h1{
+      margin:0 0 10px;
+      font-size:28px;
+    }
+
+    .hero p{
+      color:#555;
+      line-height:1.6;
+    }
+
+    .chat{
+      background:#fff;
+      border-radius:16px;
+      padding:20px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    .msg{
+      margin-bottom:10px;
+      padding:12px;
+      border-radius:12px;
+    }
+
+    .bot{
+      background:#e2e8f0;
+    }
+
+    .user{
+      background:#c8102e;
+      color:#fff;
+      text-align:right;
+    }
+
+    .buttons{
+      margin-top:15px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    button{
+      padding:12px;
+      border:none;
+      border-radius:10px;
+      background:#c8102e;
+      color:#fff;
+      cursor:pointer;
+      font-weight:bold;
+    }
+
+    button:hover{
+      background:#a30d24;
+    }
+
+    @media(max-width:600px){
+      .hero h1{
+        font-size:22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+    <img src="logo.png" alt="logo">
+    <strong>Mundo D&H</strong>
+  </div>
+
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="catalogo.html">Catálogo</a>
+    <a href="contacto.html">Contacto</a>
+  </nav>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Prepara tu solicitud comercial</h1>
+    <p>
+      Este asistente te ayuda a ordenar tu cotización antes de enviarla por WhatsApp.
+    </p>
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="msg bot">
+      Hola 👋 ¿Qué necesitas cotizar?
+    </div>
+
+    <div class="buttons">
+      <button onclick="send('Cotizar productos')">Cotizar productos</button>
+      <button onclick="send('Compra empresa')">Compra empresa</button>
+      <button onclick="send('Pedido por volumen')">Pedido por volumen</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function send(text){
+  const chat = document.getElementById("chat");
+
+  const user = document.createElement("div");
+  user.className = "msg user";
+  user.innerText = text;
+  chat.appendChild(user);
+
+  setTimeout(()=>{
+    const bot = document.createElement("div");
+    bot.className = "msg bot";
+    bot.innerText = "Perfecto, te llevaré a WhatsApp para continuar.";
+    chat.appendChild(bot);
+
+    window.open(
+      "https://wa.me/56954486171?text=" + encodeURIComponent(text),
+      "_blank"
+    );
+  },800);
+}
+</script>
+
+</body>
+</html>
