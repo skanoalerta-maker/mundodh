@@ -1,0 +1,47 @@
+[
+  {
+    "sku": "519490",
+    "categoria": "Aseo",
+    "nombre": "Bolsa basura rollo 80x110 10 und verde",
+    "descripcion": "Bolsa de basura en rollo, pack de 10 unidades.",
+    "marca": "CLEAN",
+    "unidad": "Pack 10 und",
+    "tipoVenta": "pack",
+    "unidadesPorPack": 10,
+    "precioNeto": 1276,
+    "margen": 0.39,
+    "stock": 40,
+    "imagen": "",
+    "estado": "activo"
+  },
+  {
+    "sku": "125548",
+    "categoria": "Aseo",
+    "nombre": "Cloro líquido concentrado 5 lt",
+    "descripcion": "Cloro líquido concentrado para limpieza general.",
+    "marca": "TREMEX",
+    "unidad": "Bidón 5 lt",
+    "tipoVenta": "unidad",
+    "unidadesPorPack": 1,
+    "precioNeto": 3659,
+    "margen": 0.39,
+    "stock": 18,
+    "imagen": "",
+    "estado": "activo"
+  },
+  {
+    "sku": "545871",
+    "categoria": "Aseo",
+    "nombre": "Paño reutilizable bobina max 60 890 und",
+    "descripcion": "Bobina reutilizable de 890 paños. Se vende como bobina completa.",
+    "marca": "ELITE",
+    "unidad": "Bobina 890 und",
+    "tipoVenta": "pack",
+    "unidadesPorPack": 890,
+    "precioNeto": 34309,
+    "margen": 0.39,
+    "stock": 4,
+    "imagen": "",
+    "estado": "activo"
+  }
+]
