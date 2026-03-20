@@ -205,6 +205,8 @@
       box-shadow:var(--shadow-soft);
       padding:24px;
       transition:.18s ease;
+      display:flex;
+      flex-direction:column;
     }
 
     .contact-box:hover{
@@ -256,6 +258,8 @@
       font-size:14px;
       font-weight:800;
       cursor:pointer;
+      text-decoration:none;
+      border:none;
     }
 
     .contact-box .btn-soft{
@@ -405,12 +409,12 @@
   <div class="topbar">
     <div class="wrap topbar-inner">
       <div class="topbar-left">
-        <span>📍 Gran Talcahuano</span>
-        <span>📞 Contacto y atención comercial</span>
+        <span>Gran Talcahuano</span>
+        <span>Contacto y atención comercial</span>
       </div>
       <div class="topbar-right">
-        <span>📦 Pedidos coordinados</span>
-        <span>📲 WhatsApp directo</span>
+        <span>Pedidos coordinados</span>
+        <span>WhatsApp directo</span>
       </div>
     </div>
   </div>
@@ -418,7 +422,7 @@
   <header class="header small-header">
     <div class="wrap nav">
       <a class="brand" href="index.html">
-        <img src="./logotipo.png" alt="Mundo D&H" class="brand-logo">
+        <img src="./logotipo.png" alt="Mundo D&H" class="brand-logo" />
       </a>
 
       <nav class="menu">
@@ -431,7 +435,9 @@
 
       <a class="btn btn-yellow" href="empresas.html">Cotizar</a>
     </div>
+  </header>
 
+  <main>
     <section class="wrap contact-hero">
       <div class="contact-hero-main">
         <div class="contact-hero-content">
@@ -497,7 +503,7 @@
       </div>
     </section>
 
-    <div class="wrap">
+    <section class="wrap">
       <div class="contact-strip">
         <div class="contact-strip-track">
           <span>CONTACTO DIRECTO</span>
@@ -517,10 +523,8 @@
           <span>PEDIDOS COORDINADOS</span>
         </div>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <main>
     <section class="section">
       <div class="wrap">
         <div class="contact-head">
@@ -658,7 +662,7 @@
   <footer class="footer">
     <div class="wrap footer-grid">
       <div>
-        <img src="./logotipo.png" alt="Mundo D&H" class="footer-logo">
+        <img src="./logotipo.png" alt="Mundo D&H" class="footer-logo" />
         <p>Mundo D&amp;H · contacto y atención comercial con foco en Gran Talcahuano.</p>
       </div>
 
