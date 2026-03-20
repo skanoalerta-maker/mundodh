@@ -27,11 +27,14 @@ async function cargarProductos() {
 
     const data = await res.json();
 
-    if (!Array.isArray(data)) {
-      throw new Error("productos.json no contiene un arreglo válido");
+    if (Array.isArray(data)) {
+      productos = data;
+    } else if (data && Array.isArray(data.productos)) {
+      productos = data.productos;
+    } else {
+      throw new Error("productos.json no contiene un arreglo válido ni una propiedad 'productos'");
     }
 
-    productos = data;
     filtrados = productos.filter(esProductoActivo);
 
     llenarFiltros();
@@ -476,6 +479,7 @@ function obtenerSku(producto) {
   return (
     producto.sku ||
     producto.codigo ||
+    producto.codigo_interno ||
     producto.cod ||
     producto.id_producto ||
     ""
@@ -506,6 +510,7 @@ function obtenerImagen(producto) {
 function obtenerPrecio(producto) {
   return (
     producto.precio ??
+    producto.precio_web_con_iva ??
     producto.precio_venta ??
     producto.valor ??
     producto.price ??
