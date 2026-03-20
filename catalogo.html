@@ -103,6 +103,8 @@
       letter-spacing:.2px;
       margin-bottom:14px;
       backdrop-filter:blur(6px);
+      position:relative;
+      z-index:1;
     }
 
     .catalog-hero h1{
@@ -199,24 +201,6 @@
       grid-template-columns:repeat(4, 1fr);
       gap:16px;
       align-items:stretch;
-    }
-
-    .empty-state{
-      grid-column:1 / -1;
-      background:#fff;
-      border:1px solid rgba(19,32,51,.06);
-      border-radius:24px;
-      padding:34px 22px;
-      text-align:center;
-      color:var(--muted);
-      box-shadow:var(--shadow-soft);
-    }
-
-    .empty-state strong{
-      display:block;
-      color:var(--ink);
-      font-size:20px;
-      margin-bottom:8px;
     }
 
     .catalog-footer-note{
@@ -319,13 +303,9 @@
         <div class="catalog-tools">
           <input type="text" id="searchInput" placeholder="Buscar producto..." />
 
-          <select id="categoryFilter">
-            <option value="">Todas las categorías</option>
-          </select>
+          <select id="categoryFilter"></select>
 
-          <select id="brandFilter">
-            <option value="">Todas las marcas</option>
-          </select>
+          <select id="brandFilter"></select>
 
           <select id="stockFilter">
             <option value="">Todo stock</option>
@@ -358,12 +338,7 @@
         </div>
       </section>
 
-      <section id="catalogGrid" class="catalog-grid">
-        <div class="empty-state">
-          <strong>Cargando productos...</strong>
-          <span>En unos segundos se mostrará el catálogo comercial.</span>
-        </div>
-      </section>
+      <section id="catalogGrid" class="catalog-grid"></section>
 
       <div class="catalog-footer-note">
         Precios, stock y disponibilidad sujetos a confirmación comercial.
