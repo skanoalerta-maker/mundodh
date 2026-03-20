@@ -132,12 +132,12 @@ function formatoPeso(valor) {
     style: "currency",
     currency: "CLP",
     maximumFractionDigits: 0
-  }).format(valor || 0);
+  }).format(Number(valor || 0));
 }
 
 function precioVenta(producto) {
   const neto = Number(producto.precioNeto || 0);
-  const margen = typeof producto.margen === "number" ? producto.margen : 0.39;
+  const margen = Number(producto.margen ?? 0.39);
   return Math.round(neto * (1 + margen));
 }
 
@@ -209,23 +209,31 @@ async function cargarCatalogo() {
     const response = await fetch("productos.json", { cache: "no-store" });
     if (!response.ok) throw new Error("No se pudo cargar productos.json");
     productos = await response.json();
+
+    if (!Array.isArray(productos)) {
+      throw new Error("productos.json no tiene formato de lista");
+    }
   } catch (error) {
+    console.error(error);
     grid.innerHTML = `
       <div class="empty-state">
         <h3>No se pudo cargar el catálogo</h3>
-        <p>Revisa que el archivo <strong>productos.json</strong> exista en la misma carpeta del sitio.</p>
+        <p>Revisa que <strong>productos.json</strong> sea un JSON real y no un archivo Excel renombrado.</p>
       </div>
     `;
     return;
   }
 
-  productos = productos.map(p => ({
-    ...p,
-    precioNeto: Number(p.precioNeto || 0),
-    stock: Number(p.stock || 0),
-    unidadesPorPack: Number(p.unidadesPorPack || 1),
-    margen: typeof p.margen === "number" ? p.margen : 0.39
-  }));
+  productos = productos
+    .filter(p => p && typeof p === "object")
+    .filter(p => Number(p.precioNeto) > 0)
+    .map(p => ({
+      ...p,
+      precioNeto: Number(p.precioNeto || 0),
+      stock: Number(p.stock || 0),
+      unidadesPorPack: Number(p.unidadesPorPack || 1),
+      margen: Number(p.margen ?? 0.39)
+    }));
 
   const categorias = [...new Set(productos.map(p => p.categoria).filter(Boolean))].sort();
   const marcas = [...new Set(productos.map(p => p.marca).filter(Boolean))].sort();
@@ -296,11 +304,7 @@ async function cargarCatalogo() {
 
           <div class="product-prices">
             <div class="price-row">
-              <span class="price-label">Precio neto</span>
-              <span class="price-value">${formatoPeso(producto.precioNeto)}</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Precio venta</span>
+              <span class="price-label">Precio</span>
               <span class="price-sale">${formatoPeso(precioVenta(producto))}</span>
             </div>
             <div class="price-row">
