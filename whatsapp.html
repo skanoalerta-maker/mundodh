@@ -1,38 +1,185 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asistente comercial | Mundo D&H</title>
+  <title>Mundo D&H | Asistente comercial empresas</title>
   <meta
     name="description"
     content="Asistente comercial de Mundo D&H para cotizar productos, compras empresa, pedidos por volumen y suministros para oficina, aseo, ferretería, computación y escolar."
   />
+  <meta name="theme-color" content="#c8102e" />
 
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" type="image/png" href="logo.png" />
 
   <style>
     .assistant-page{
-      padding:56px 0 80px;
+      padding:28px 0 64px;
       position:relative;
       z-index:2;
     }
 
     .assistant-wrap{
-      max-width:920px;
+      max-width:980px;
       margin:0 auto;
+    }
+
+    .assistant-hero{
+      margin-top:22px;
+      margin-bottom:18px;
+      display:grid;
+      grid-template-columns:1.06fr .94fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .assistant-hero-main{
+      position:relative;
+      min-height:320px;
+      border-radius:28px;
+      overflow:hidden;
+      background:
+        linear-gradient(90deg, rgba(15,25,40,.88), rgba(15,25,40,.55)),
+        url("./assets/banner-ofertas.jpg") center/cover no-repeat;
+      box-shadow:var(--shadow);
+      padding:30px;
+      display:flex;
+      align-items:center;
+    }
+
+    .assistant-hero-main::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(200,16,46,.08), rgba(0,0,0,.18));
+      pointer-events:none;
+    }
+
+    .assistant-hero-copy{
+      position:relative;
+      z-index:1;
+      color:#fff;
+      max-width:620px;
+    }
+
+    .assistant-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:16px;
+    }
+
+    .assistant-hero-copy h1{
+      margin:0 0 12px;
+      font-size:46px;
+      line-height:1.02;
+      letter-spacing:-1px;
+    }
+
+    .assistant-hero-copy p{
+      margin:0;
+      color:rgba(255,255,255,.92);
+      line-height:1.72;
+      font-size:17px;
+      max-width:560px;
+    }
+
+    .assistant-hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:22px;
+    }
+
+    .assistant-side{
+      display:grid;
+      gap:18px;
+    }
+
+    .assistant-side-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow-soft);
+      padding:22px;
+    }
+
+    .assistant-side-logo{
+      width:92px;
+      height:92px;
+      border-radius:22px;
+      background:linear-gradient(180deg, #fff, #f8fafc);
+      border:1px solid rgba(200,16,46,.14);
+      box-shadow:0 12px 28px rgba(0,0,0,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      margin-bottom:14px;
+    }
+
+    .assistant-side-logo img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      transform:scale(1.14);
+    }
+
+    .assistant-side-card h3{
+      margin:0 0 10px;
+      font-size:26px;
+      line-height:1.08;
+      color:var(--ink);
+    }
+
+    .assistant-side-card p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:15px;
+    }
+
+    .assistant-mini-list{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .assistant-mini-item{
+      padding:14px;
+      border-radius:16px;
+      background:#f8fafc;
+      border:1px solid #e8edf4;
+    }
+
+    .assistant-mini-item strong{
+      display:block;
+      margin-bottom:4px;
+      color:var(--ink);
+      font-size:15px;
+    }
+
+    .assistant-mini-item span{
+      color:var(--muted);
+      line-height:1.55;
+      font-size:14px;
     }
 
     .assistant-shell{
       background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
-      border:1px solid rgba(200,16,46,.12);
+      border:1px solid rgba(200,16,46,.10);
       border-radius:30px;
       box-shadow:
-        0 24px 60px rgba(0,0,0,.10),
-        0 0 0 1px rgba(255,255,255,.8) inset;
+        0 24px 60px rgba(0,0,0,.08),
+        0 0 0 1px rgba(255,255,255,.7) inset;
       overflow:hidden;
-      backdrop-filter:blur(14px);
     }
 
     .assistant-head{
@@ -42,33 +189,29 @@
       padding:22px 24px 18px;
       border-bottom:1px solid rgba(15,23,42,.08);
       background:
-        radial-gradient(circle at top right, rgba(200,16,46,.08), transparent 24%),
+        radial-gradient(circle at top right, rgba(200,16,46,.07), transparent 24%),
         linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
     }
 
     .assistant-logo{
-      width:72px;
-      height:72px;
+      width:74px;
+      height:74px;
       border-radius:20px;
-      background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(241,245,249,.98));
-      border:1px solid rgba(200,16,46,.16);
-      box-shadow:
-        0 12px 24px rgba(0,0,0,.08),
-        0 0 14px rgba(200,16,46,.05);
+      background:linear-gradient(180deg, #ffffff, #f8fafc);
+      border:1px solid rgba(200,16,46,.14);
+      box-shadow:0 12px 24px rgba(0,0,0,.06);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:0;
-      flex-shrink:0;
       overflow:hidden;
+      flex-shrink:0;
     }
 
     .assistant-logo img{
       width:100%;
       height:100%;
       object-fit:contain;
-      transform:scale(1.18);
-      transform-origin:center;
+      transform:scale(1.15);
     }
 
     .assistant-head-copy{
@@ -78,7 +221,7 @@
 
     .assistant-head-copy strong{
       display:block;
-      font-size:1.05rem;
+      font-size:1.04rem;
       margin-bottom:6px;
       color:#111827;
       line-height:1.2;
@@ -119,7 +262,7 @@
 
     .assistant-title{
       margin:0 0 12px;
-      font-size:clamp(2rem, 3vw, 2.8rem);
+      font-size:clamp(2rem, 3vw, 2.7rem);
       line-height:1.08;
       letter-spacing:-.03em;
       color:#111827;
@@ -127,7 +270,7 @@
 
     .assistant-lead{
       margin:0 auto;
-      max-width:700px;
+      max-width:720px;
       color:#475569;
       line-height:1.75;
       font-size:1rem;
@@ -164,11 +307,11 @@
 
     .chat-msg.user{
       color:#ffffff;
-      background:linear-gradient(135deg, rgba(200,16,46,.94), rgba(163,13,36,.94));
+      background:linear-gradient(135deg, rgba(200,16,46,.96), rgba(159,15,37,.96));
       border:1px solid rgba(200,16,46,.28);
       margin-left:auto;
       text-align:left;
-      box-shadow:0 12px 26px rgba(200,16,46,.16);
+      box-shadow:0 12px 26px rgba(200,16,46,.14);
     }
 
     .chat-msg.typing{
@@ -313,88 +456,50 @@
       width:100%;
     }
 
-    .main-header .header-inner{
-      min-height:96px;
-      gap:18px;
+    .empresas-footer{
+      margin-top:22px;
     }
 
-    .main-header .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
-      flex:1;
-    }
-
-    .main-header .brand-logo-wrap{
-      width:92px;
-      height:92px;
+    .empresas-footer-card{
+      background:#fff;
+      border:1px solid var(--line);
       border-radius:24px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(200,16,46,.10), transparent 52%),
-        linear-gradient(180deg, rgba(255,255,255,.98), rgba(241,245,249,.98));
-      border:1px solid rgba(200,16,46,.18);
-      box-shadow:
-        0 18px 38px rgba(0,0,0,.10),
-        0 0 0 1px rgba(255,255,255,.8) inset;
+      box-shadow:var(--shadow-soft);
+      padding:24px;
       display:flex;
+      justify-content:space-between;
+      gap:18px;
       align-items:center;
-      justify-content:center;
-      padding:0;
-      flex-shrink:0;
-      position:relative;
-      overflow:hidden;
+      flex-wrap:wrap;
     }
 
-    .main-header .brand-logo-wrap::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:linear-gradient(135deg, rgba(255,255,255,.35), transparent 42%);
-      pointer-events:none;
+    .empresas-footer-card h2{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.08;
+      color:var(--ink);
     }
 
-    .main-header .logo-img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      transform:scale(1.22);
-      transform-origin:center;
-      position:relative;
-      z-index:2;
+    .empresas-footer-card p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.65;
+      max-width:760px;
     }
 
-    .main-header .brand-copy{
-      min-width:0;
-    }
-
-    .main-header .brand-copy strong{
-      font-size:1rem;
-      font-weight:800;
-      color:#111827;
-      letter-spacing:-.02em;
-      line-height:1.1;
-      display:block;
-      margin-bottom:5px;
-    }
-
-    .main-header .brand-copy span{
-      font-size:.8rem;
-      color:#475569;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:360px;
-      display:block;
-    }
-
-    .main-header .header-actions{
-      flex-shrink:0;
+    .empresas-footer-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
     @media (max-width:980px){
       .assistant-wrap{
         max-width:760px;
+      }
+
+      .assistant-hero{
+        grid-template-columns:1fr;
       }
 
       .assistant-head{
@@ -404,42 +509,40 @@
       .assistant-body{
         padding:20px;
       }
-
-      .main-header .header-inner{
-        min-height:88px;
-      }
-
-      .main-header .brand-logo-wrap{
-        width:78px;
-        height:78px;
-        border-radius:20px;
-      }
-
-      .main-header .logo-img{
-        transform:scale(1.14);
-      }
-
-      .main-header .brand-copy strong{
-        font-size:.95rem;
-      }
-
-      .main-header .brand-copy span{
-        font-size:.76rem;
-        max-width:240px;
-      }
     }
 
     @media (max-width:640px){
       .assistant-page{
-        padding:24px 0 54px;
-      }
-
-      .assistant-wrap{
-        max-width:100%;
+        padding:22px 0 54px;
       }
 
       .assistant-shell{
         border-radius:22px;
+      }
+
+      .assistant-hero-main{
+        min-height:280px;
+        padding:22px 18px;
+        border-radius:22px;
+      }
+
+      .assistant-hero-copy h1{
+        font-size:32px;
+      }
+
+      .assistant-hero-copy p{
+        font-size:15px;
+        line-height:1.65;
+      }
+
+      .assistant-side-card{
+        padding:18px;
+      }
+
+      .assistant-side-logo{
+        width:72px;
+        height:72px;
+        border-radius:18px;
       }
 
       .assistant-head{
@@ -455,7 +558,7 @@
       }
 
       .assistant-logo img{
-        transform:scale(1.12);
+        transform:scale(1.1);
       }
 
       .assistant-head-copy strong{
@@ -483,7 +586,7 @@
       }
 
       .assistant-title{
-        font-size:1.85rem;
+        font-size:1.8rem;
         line-height:1.08;
       }
 
@@ -505,16 +608,12 @@
         border-radius:15px;
       }
 
-      .assistant-options{
-        gap:10px;
-      }
-
       .assistant-options button,
       .assistant-actions a,
       .assistant-actions button,
-      .interest-options button{
-        font-size:.9rem;
-        padding:12px 14px;
+      .interest-options button,
+      .empresas-footer-actions .btn{
+        width:100%;
       }
 
       .assistant-summary{
@@ -532,127 +631,103 @@
         line-height:1.5;
       }
 
-      .main-header .header-inner{
-        min-height:auto;
-        padding-top:10px;
-        padding-bottom:10px;
-        gap:10px;
+      .empresas-footer-card{
+        padding:18px;
       }
 
-      .main-header .brand{
-        gap:10px;
-        min-width:0;
-      }
-
-      .main-header .brand-logo-wrap{
-        width:58px;
-        height:58px;
-        border-radius:16px;
-      }
-
-      .main-header .logo-img{
-        transform:scale(1.06);
-      }
-
-      .main-header .brand-copy strong{
-        font-size:.86rem;
-        margin-bottom:4px;
-      }
-
-      .main-header .brand-copy span{
-        font-size:.64rem;
-        white-space:normal;
-        line-height:1.3;
-        max-width:130px;
-      }
-
-      .main-header .header-actions .btn{
-        padding:9px 12px;
-        font-size:.75rem;
-      }
-    }
-
-    @media (max-width:420px){
-      .assistant-title{
-        font-size:1.68rem;
-      }
-
-      .assistant-lead{
-        font-size:.9rem;
-      }
-
-      .assistant-logo{
-        width:52px;
-        height:52px;
-      }
-
-      .assistant-logo img{
-        transform:scale(1.08);
-      }
-
-      .main-header .brand-logo-wrap{
-        width:52px;
-        height:52px;
-        border-radius:14px;
-      }
-
-      .main-header .logo-img{
-        transform:scale(1);
-      }
-
-      .main-header .brand-copy strong{
-        font-size:.8rem;
-      }
-
-      .main-header .brand-copy span{
-        font-size:.6rem;
-        max-width:110px;
-      }
-
-      .main-header .header-actions .btn{
-        padding:8px 10px;
-        font-size:.72rem;
+      .empresas-footer-card h2{
+        font-size:26px;
       }
     }
   </style>
 </head>
 <body>
-
-  <div class="site-bg" aria-hidden="true">
-    <div class="bg-gradient"></div>
-    <div class="bg-grid"></div>
-    <div class="bg-circuits"></div>
-    <div class="bg-orb orb-1"></div>
-    <div class="bg-orb orb-2"></div>
-    <div class="bg-orb orb-3"></div>
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="topbar-left">
+        <span>Gran Talcahuano</span>
+        <span>Atención comercial empresas</span>
+      </div>
+      <div class="topbar-right">
+        <span>Cotización por WhatsApp</span>
+        <span>Pedidos y compras empresa</span>
+      </div>
+    </div>
   </div>
 
-  <header class="main-header">
-    <div class="container header-inner">
-      <a href="index.html" class="brand" aria-label="Mundo D&H">
-        <div class="brand-logo-wrap">
-          <img src="logo.png" alt="Logo Mundo D&H" class="logo-img" />
-        </div>
-        <div class="brand-copy">
-          <strong>Mundo D&amp;H</strong>
-          <span>Suministros y atención comercial para empresas</span>
-        </div>
+  <header class="header small-header">
+    <div class="wrap nav">
+      <a class="brand" href="index.html" aria-label="Mundo D&H">
+        <img src="logo.png" alt="Logo Mundo D&H" class="brand-logo" />
       </a>
 
-      <div class="header-actions">
-        <a href="index.html" class="btn btn-secondary">Volver al inicio</a>
-      </div>
+      <nav class="menu">
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="empresas.html">Empresas</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+
+      <a href="index.html" class="btn btn-yellow">Volver al inicio</a>
     </div>
   </header>
 
   <main class="assistant-page">
-    <div class="container">
+    <div class="wrap">
       <div class="assistant-wrap">
-        <div class="assistant-shell">
+        <section class="assistant-hero">
+          <div class="assistant-hero-main">
+            <div class="assistant-hero-copy">
+              <div class="assistant-badge">Asistente comercial Mundo D&amp;H</div>
+              <h1>Prepara tu solicitud comercial antes de cotizar</h1>
+              <p>
+                Este asistente te ayuda a ordenar mejor tu requerimiento para compras empresa, pedidos por volumen,
+                abastecimiento de oficina, aseo, escolar, ferretería y computación.
+              </p>
 
+              <div class="assistant-hero-actions">
+                <a href="#asistente" class="btn btn-yellow">Comenzar asistente</a>
+                <a href="catalogo.html" class="btn btn-outline-white">Ver catálogo</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="assistant-side">
+            <div class="assistant-side-card">
+              <div class="assistant-side-logo">
+                <img src="logo.png" alt="Logo Mundo D&H" />
+              </div>
+              <h3>Canal pensado para empresas</h3>
+              <p>
+                Ideal para clientes que necesitan cotizar con más orden, explicar su requerimiento y llegar
+                a WhatsApp con un mensaje comercial mejor preparado.
+              </p>
+            </div>
+
+            <div class="assistant-side-card">
+              <h3>Qué podrás definir aquí</h3>
+              <div class="assistant-mini-list">
+                <div class="assistant-mini-item">
+                  <strong>Tipo de requerimiento</strong>
+                  <span>Cotización, compra empresa, pedido por volumen o consulta de despacho.</span>
+                </div>
+                <div class="assistant-mini-item">
+                  <strong>Tipo de cliente</strong>
+                  <span>Empresa, pyme, institución/colegio o compra particular.</span>
+                </div>
+                <div class="assistant-mini-item">
+                  <strong>Categoría principal</strong>
+                  <span>Oficina, aseo, ferretería, computación o escolar.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="assistant-shell" id="asistente">
           <div class="assistant-head">
             <div class="assistant-logo">
-              <img src="logo.png" alt="Logo Mundo D&H">
+              <img src="logo.png" alt="Logo Mundo D&H" />
             </div>
             <div class="assistant-head-copy">
               <strong>Asistente comercial Mundo D&amp;H</strong>
@@ -697,14 +772,14 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
               <div class="assistant-interest">
                 <div class="assistant-interest-title">¿Qué tan avanzado está tu interés de compra?</div>
                 <div class="interest-options">
-                  <button class="btn btn-secondary" type="button" onclick="chooseInterest('Necesito cotizar pronto')">
-                    ✅ Necesito cotizar pronto
+                  <button class="btn btn-dark" type="button" onclick="chooseInterest('Necesito cotizar pronto')">
+                    Necesito cotizar pronto
                   </button>
-                  <button class="btn btn-secondary" type="button" onclick="chooseInterest('Estoy comparando opciones')">
-                    📌 Estoy comparando opciones
+                  <button class="btn btn-dark" type="button" onclick="chooseInterest('Estoy comparando opciones')">
+                    Estoy comparando opciones
                   </button>
-                  <button class="btn btn-secondary" type="button" onclick="chooseInterest('Solo quiero información inicial')">
-                    ℹ️ Solo quiero información inicial
+                  <button class="btn btn-dark" type="button" onclick="chooseInterest('Solo quiero información inicial')">
+                    Solo quiero información inicial
                   </button>
                 </div>
               </div>
@@ -713,10 +788,10 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
             <div class="assistant-summary" id="summary"></div>
 
             <div class="assistant-actions" id="actions">
-              <a id="waLink" class="btn btn-primary" href="#" target="_blank" rel="noopener">
+              <a id="waLink" class="btn btn-yellow" href="#" target="_blank" rel="noopener noreferrer">
                 Abrir WhatsApp con mi solicitud
               </a>
-              <button class="btn btn-secondary" onclick="restartAssistant()">
+              <button class="btn btn-dark" type="button" onclick="restartAssistant()">
                 Volver a empezar
               </button>
             </div>
@@ -726,27 +801,63 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
               antes del contacto comercial.
             </p>
           </div>
+        </section>
 
-        </div>
+        <section class="empresas-footer">
+          <div class="empresas-footer-card">
+            <div>
+              <h2>¿Prefieres ir directo al contacto?</h2>
+              <p>
+                También puedes escribir directamente por WhatsApp o volver al catálogo para revisar categorías
+                y productos antes de enviar tu solicitud comercial.
+              </p>
+            </div>
+
+            <div class="empresas-footer-actions">
+              <button class="btn btn-yellow" type="button" onclick="quickWhatsApp()">
+                Hablar por WhatsApp
+              </button>
+              <a href="catalogo.html" class="btn btn-dark">Ver catálogo</a>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </main>
 
   <footer class="footer">
-    <div class="container footer-inner">
-      <div class="footer-copy">
-        <strong>Mundo D&amp;H</strong> · Suministros para empresas, oficinas y negocios<br>
-        Atención comercial y cotizaciones por WhatsApp
+    <div class="wrap footer-grid">
+      <div>
+        <img src="logo.png" alt="Mundo D&H" class="footer-logo" />
+        <p>Mundo D&amp;H · atención comercial, cotizaciones y compras para empresas, pymes e instituciones.</p>
       </div>
 
-      <div class="footer-links">
-        <span>Chile</span>
-        <span>Venta empresa</span>
-        <span>Cotizaciones comerciales</span>
+      <div>
+        <h4>Navegación</h4>
+        <a href="index.html">Inicio</a>
+        <a href="catalogo.html">Catálogo</a>
+        <a href="empresas.html">Empresas</a>
+        <a href="contacto.html">Contacto</a>
+      </div>
+
+      <div>
+        <h4>Cobertura</h4>
+        <div>Gran Talcahuano</div>
+        <div>Atención comercial</div>
+        <div>Pedidos coordinados</div>
+      </div>
+
+      <div>
+        <h4>Contacto</h4>
+        <div>dhasociados25@gmail.com</div>
+        <div>hernancorrealara@gmail.com</div>
       </div>
     </div>
   </footer>
 
+  <button class="wa-float" type="button" onclick="quickWhatsApp()" aria-label="WhatsApp">✆</button>
+
+  <script src="script.js"></script>
   <script>
     const DYH_PHONE = "56954486171";
 
@@ -792,9 +903,10 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
       options.innerHTML = "";
       actions.classList.remove("show");
 
-      buttons.forEach(btn => {
+      buttons.forEach((btn) => {
         const button = document.createElement("button");
-        button.className = "btn btn-secondary";
+        button.className = "btn btn-dark";
+        button.type = "button";
         button.textContent = btn.label;
         button.onclick = btn.onClick;
         options.appendChild(button);
@@ -834,19 +946,19 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
 
       renderButtons([
         {
-          label: "🧾 Quiero cotizar productos",
+          label: "Quiero cotizar productos",
           onClick: () => chooseRequest("Cotización de productos")
         },
         {
-          label: "📦 Necesito pedido por volumen",
+          label: "Necesito pedido por volumen",
           onClick: () => chooseRequest("Pedido por volumen")
         },
         {
-          label: "🏢 Quiero compra para empresa",
+          label: "Quiero compra para empresa",
           onClick: () => chooseRequest("Compra empresa")
         },
         {
-          label: "🚚 Necesito información de despacho y tiempos",
+          label: "Necesito información de despacho y tiempos",
           onClick: () => chooseRequest("Consulta de despacho")
         }
       ]);
@@ -860,19 +972,19 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
         addMessage("Perfecto. Ahora dime qué tipo de cliente eres:");
         renderButtons([
           {
-            label: "🏢 Empresa",
+            label: "Empresa",
             onClick: () => chooseClient("Empresa")
           },
           {
-            label: "📊 Pyme",
+            label: "Pyme",
             onClick: () => chooseClient("Pyme")
           },
           {
-            label: "🏫 Institución / colegio",
+            label: "Institución / colegio",
             onClick: () => chooseClient("Institución / colegio")
           },
           {
-            label: "👤 Compra particular",
+            label: "Compra particular",
             onClick: () => chooseClient("Particular")
           }
         ]);
@@ -887,23 +999,23 @@ Para comenzar, selecciona qué tipo de compra o requerimiento te interesa:
         addMessage("Entendido. ¿Qué categoría de productos te interesa principalmente?");
         renderButtons([
           {
-            label: "🗂️ Oficina y papelería",
+            label: "Oficina y papelería",
             onClick: () => chooseCategory("Oficina y papelería")
           },
           {
-            label: "🧴 Aseo y limpieza",
+            label: "Aseo y limpieza",
             onClick: () => chooseCategory("Aseo y limpieza")
           },
           {
-            label: "🛠️ Ferretería",
+            label: "Ferretería",
             onClick: () => chooseCategory("Ferretería")
           },
           {
-            label: "💻 Computación",
+            label: "Computación",
             onClick: () => chooseCategory("Computación")
           },
           {
-            label: "🎒 Escolar",
+            label: "Escolar",
             onClick: () => chooseCategory("Escolar")
           }
         ]);
