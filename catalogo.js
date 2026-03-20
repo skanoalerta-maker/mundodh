@@ -1,647 +1,407 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mundo D&H | Catálogo comercial</title>
-  <meta
-    name="description"
-    content="Catálogo comercial de Mundo D&H. Productos para empresas, oficinas, colegios e instituciones con cotización rápida por WhatsApp."
-  />
-  <meta name="theme-color" content="#c8102e" />
-  <link rel="stylesheet" href="style.css" />
+const PHONE = "56954486171";
 
-  <style>
-    .catalog-shell{
-      background:
-        radial-gradient(circle at top right, rgba(200,16,46,.06), transparent 24%),
-        linear-gradient(180deg, #f8fafc 0%, #f3f6fa 100%);
-      min-height:100vh;
-      padding:28px 0 54px;
+let productos = [];
+let filtrados = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  iniciarCatalogo();
+});
+
+async function iniciarCatalogo() {
+  await cargarProductos();
+  conectarFiltros();
+}
+
+async function cargarProductos() {
+  const grid = document.getElementById("catalogGrid");
+
+  try {
+    const res = await fetch("./productos.json", { cache: "no-store" });
+
+    if (!res.ok) {
+      throw new Error(`No se pudo cargar productos.json (${res.status})`);
     }
 
-    .catalog-top{
-      background:
-        linear-gradient(135deg, rgba(200,16,46,.96) 0%, rgba(159,15,37,.98) 100%);
-      color:#fff;
-      border-radius:30px;
-      padding:30px;
-      box-shadow:0 26px 54px rgba(159,15,37,.18);
-      overflow:hidden;
-      position:relative;
-      margin-top:24px;
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      throw new Error("productos.json no contiene un arreglo válido");
     }
 
-    .catalog-top::after{
-      content:"";
-      position:absolute;
-      top:-60px;
-      right:-60px;
-      width:220px;
-      height:220px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      filter:blur(2px);
+    productos = data;
+
+    filtrados = productos.filter(esProductoActivo);
+
+    llenarFiltros();
+    renderProductos();
+    actualizarResumen();
+  } catch (error) {
+    console.error("Error cargando catálogo:", error);
+
+    if (grid) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <strong>No se pudo cargar el catálogo</strong>
+          <div>Revisa el archivo <b>productos.json</b> y la ruta de <b>catalogo.js</b>.</div>
+        </div>
+      `;
+    }
+  }
+}
+
+function conectarFiltros() {
+  const searchInput = document.getElementById("searchInput");
+  const categoryFilter = document.getElementById("categoryFilter");
+  const brandFilter = document.getElementById("brandFilter");
+  const stockFilter = document.getElementById("stockFilter");
+
+  searchInput?.addEventListener("input", aplicarFiltros);
+  categoryFilter?.addEventListener("change", aplicarFiltros);
+  brandFilter?.addEventListener("change", aplicarFiltros);
+  stockFilter?.addEventListener("change", aplicarFiltros);
+}
+
+function esProductoActivo(producto) {
+  const estado = String(
+    producto.estado ??
+    producto.status ??
+    producto.activo ??
+    ""
+  ).toLowerCase().trim();
+
+  if (estado === "") return true;
+  if (estado === "activo") return true;
+  if (estado === "active") return true;
+  if (estado === "true") return true;
+
+  return false;
+}
+
+function llenarFiltros() {
+  const catSelect = document.getElementById("categoryFilter");
+  const brandSelect = document.getElementById("brandFilter");
+
+  if (!catSelect || !brandSelect) return;
+
+  const categorias = [...new Set(
+    productos
+      .filter(esProductoActivo)
+      .map(p => obtenerCategoria(p))
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "es"));
+
+  const marcas = [...new Set(
+    productos
+      .filter(esProductoActivo)
+      .map(p => obtenerMarca(p))
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, "es"));
+
+  catSelect.innerHTML = `<option value="">Todas las categorías</option>`;
+  brandSelect.innerHTML = `<option value="">Todas las marcas</option>`;
+
+  categorias.forEach(categoria => {
+    const option = document.createElement("option");
+    option.value = categoria;
+    option.textContent = categoria;
+    catSelect.appendChild(option);
+  });
+
+  marcas.forEach(marca => {
+    const option = document.createElement("option");
+    option.value = marca;
+    option.textContent = marca;
+    brandSelect.appendChild(option);
+  });
+}
+
+function aplicarFiltros() {
+  const texto = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+  const categoria = document.getElementById("categoryFilter")?.value || "";
+  const marca = document.getElementById("brandFilter")?.value || "";
+  const stock = document.getElementById("stockFilter")?.value || "";
+
+  filtrados = productos.filter(producto => {
+    if (!esProductoActivo(producto)) return false;
+
+    const nombre = obtenerNombre(producto).toLowerCase();
+    const marcaTexto = obtenerMarca(producto).toLowerCase();
+    const categoriaTexto = obtenerCategoria(producto).toLowerCase();
+    const sku = obtenerSku(producto).toLowerCase();
+    const descripcion = obtenerDescripcion(producto).toLowerCase();
+    const stockTexto = obtenerStockTexto(producto).toLowerCase();
+
+    const coincideTexto =
+      !texto ||
+      nombre.includes(texto) ||
+      marcaTexto.includes(texto) ||
+      sku.includes(texto) ||
+      descripcion.includes(texto) ||
+      categoriaTexto.includes(texto);
+
+    const coincideCategoria =
+      !categoria || obtenerCategoria(producto) === categoria;
+
+    const coincideMarca =
+      !marca || obtenerMarca(producto) === marca;
+
+    let coincideStock = true;
+
+    if (stock === "con") {
+      coincideStock =
+        stockTexto.includes("con") ||
+        stockTexto.includes("disp") ||
+        stockTexto.includes("stock") ||
+        stockTexto.includes("sí") ||
+        stockTexto.includes("si");
     }
 
-    .catalog-top-grid{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:22px;
-      align-items:end;
+    if (stock === "bajo") {
+      coincideStock = stockTexto.includes("bajo");
     }
 
-    .catalog-kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:9px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.18);
-      font-size:12px;
-      font-weight:800;
-      letter-spacing:.05em;
-      text-transform:uppercase;
-      margin-bottom:14px;
+    if (stock === "sin") {
+      coincideStock =
+        stockTexto.includes("sin") ||
+        stockTexto.includes("agot") ||
+        stockTexto.includes("no disponible");
     }
 
-    .catalog-top h1{
-      margin:0 0 10px;
-      font-size:46px;
-      line-height:1.02;
-      letter-spacing:-1.2px;
-      max-width:760px;
-    }
+    return coincideTexto && coincideCategoria && coincideMarca && coincideStock;
+  });
 
-    .catalog-top p{
-      margin:0;
-      max-width:760px;
-      color:rgba(255,255,255,.92);
-      font-size:16px;
-      line-height:1.7;
-    }
+  renderProductos();
+  actualizarResumen();
+}
 
-    .catalog-side-note{
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.18);
-      border-radius:22px;
-      padding:20px;
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
-    }
+function renderProductos() {
+  const grid = document.getElementById("catalogGrid");
+  if (!grid) return;
 
-    .catalog-side-note strong{
-      display:block;
-      font-size:18px;
-      margin-bottom:6px;
-    }
-
-    .catalog-side-note span{
-      display:block;
-      color:rgba(255,255,255,.9);
-      line-height:1.65;
-      font-size:14px;
-    }
-
-    .catalog-toolbar{
-      margin-top:-22px;
-      position:relative;
-      z-index:3;
-    }
-
-    .catalog-toolbar-card{
-      background:#fff;
-      border:1px solid #e6ebf2;
-      border-radius:24px;
-      padding:18px;
-      box-shadow:0 18px 38px rgba(20,32,51,.08);
-    }
-
-    .catalog-tools{
-      display:grid;
-      grid-template-columns:1.35fr .85fr .85fr .75fr;
-      gap:12px;
-    }
-
-    .catalog-tools input,
-    .catalog-tools select{
-      width:100%;
-      border:1px solid #dbe3ee;
-      border-radius:14px;
-      padding:14px 14px;
-      font-size:14px;
-      background:#fff;
-      color:#132033;
-      outline:none;
-      transition:.18s ease;
-    }
-
-    .catalog-tools input:focus,
-    .catalog-tools select:focus{
-      border-color:#86a9cb;
-      box-shadow:0 0 0 4px rgba(15,76,129,.08);
-    }
-
-    .catalog-stats{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:14px;
-      margin:18px 0 22px;
-    }
-
-    .catalog-stat{
-      background:#fff;
-      border:1px solid #e6ebf2;
-      border-radius:22px;
-      padding:18px 20px;
-      box-shadow:0 10px 24px rgba(20,32,51,.05);
-    }
-
-    .catalog-stat strong{
-      display:block;
-      font-size:28px;
-      line-height:1;
-      color:#132033;
-      margin-bottom:8px;
-      letter-spacing:-.5px;
-    }
-
-    .catalog-stat span{
-      color:#64748b;
-      font-size:14px;
-      line-height:1.5;
-      font-weight:700;
-    }
-
-    .catalog-content{
-      display:grid;
-      grid-template-columns:280px 1fr;
-      gap:18px;
-      align-items:start;
-    }
-
-    .catalog-aside{
-      position:sticky;
-      top:18px;
-      display:grid;
-      gap:14px;
-    }
-
-    .aside-card{
-      background:#fff;
-      border:1px solid #e6ebf2;
-      border-radius:22px;
-      padding:18px;
-      box-shadow:0 10px 24px rgba(20,32,51,.05);
-    }
-
-    .aside-card h3{
-      margin:0 0 10px;
-      font-size:18px;
-      color:#132033;
-    }
-
-    .aside-card p{
-      margin:0;
-      color:#64748b;
-      line-height:1.65;
-      font-size:14px;
-    }
-
-    .aside-list{
-      margin:0;
-      padding-left:18px;
-      color:#64748b;
-      line-height:1.8;
-      font-size:14px;
-    }
-
-    .aside-cta{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:100%;
-      margin-top:14px;
-      border-radius:14px;
-      padding:13px 14px;
-      background:#128C7E;
-      color:#fff;
-      font-weight:800;
-      text-decoration:none;
-      box-shadow:0 12px 24px rgba(18,140,126,.18);
-    }
-
-    .aside-cta:hover{
-      background:#0f766a;
-    }
-
-    .catalog-main{
-      min-width:0;
-    }
-
-    .catalog-grid{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:16px;
-    }
-
-    .product-card{
-      background:#fff;
-      border:1px solid #e5ebf3;
-      border-radius:24px;
-      overflow:hidden;
-      box-shadow:0 12px 30px rgba(20,32,51,.06);
-      display:flex;
-      flex-direction:column;
-      transition:.18s ease;
-      min-height:100%;
-    }
-
-    .product-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 18px 36px rgba(20,32,51,.10);
-    }
-
-    .product-image{
-      position:relative;
-      height:220px;
-      background:
-        linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
-      overflow:hidden;
-    }
-
-    .product-image img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      padding:18px;
-      display:block;
-    }
-
-    .badge-top{
-      position:absolute;
-      top:12px;
-      left:12px;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:rgba(19,32,51,.90);
-      color:#fff;
-      padding:8px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      z-index:2;
-      max-width:calc(100% - 24px);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .badge-stock{
-      position:absolute;
-      top:12px;
-      right:12px;
-      padding:8px 10px;
-      border-radius:999px;
-      font-size:11px;
-      font-weight:800;
-      z-index:2;
-      background:#eaf8ee;
-      color:#16733d;
-      border:1px solid #caecd5;
-    }
-
-    .badge-stock.low{
-      background:#fff6e8;
-      color:#9a6500;
-      border-color:#f1d9a8;
-    }
-
-    .badge-stock.out{
-      background:#fff0f0;
-      color:#a11a1a;
-      border-color:#f0c4c4;
-    }
-
-    .product-body{
-      padding:18px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      flex:1;
-    }
-
-    .product-category{
-      font-size:11px;
-      font-weight:900;
-      color:#c8102e;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-
-    .product-name{
-      margin:0;
-      font-size:18px;
-      line-height:1.28;
-      color:#132033;
-      letter-spacing:-.25px;
-      min-height:46px;
-    }
-
-    .product-meta{
-      display:grid;
-      gap:5px;
-      color:#5f6d80;
-      font-size:13px;
-      line-height:1.5;
-    }
-
-    .product-prices{
-      margin-top:auto;
-      display:grid;
-      gap:6px;
-      padding-top:12px;
-      border-top:1px solid #edf1f6;
-    }
-
-    .price-row{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      font-size:14px;
-    }
-
-    .price-label{
-      color:#607086;
-    }
-
-    .price-sale{
-      font-size:24px;
-      color:#c8102e;
-      font-weight:900;
-      line-height:1;
-      letter-spacing:-.5px;
-    }
-
-    .product-actions{
-      display:grid;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .btn-product{
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      width:100%;
-      border:none;
-      border-radius:14px;
-      padding:13px 14px;
-      font-size:14px;
-      font-weight:800;
-      text-decoration:none;
-      cursor:pointer;
-      transition:.18s ease;
-    }
-
-    .btn-wa{
-      background:#128C7E;
-      color:#fff;
-      box-shadow:0 12px 24px rgba(18,140,126,.16);
-    }
-
-    .btn-wa:hover{
-      background:#0f766a;
-    }
-
-    .empty-state{
-      grid-column:1 / -1;
-      background:#fff;
-      border:1px solid #e5ebf3;
-      border-radius:24px;
-      padding:40px 24px;
-      text-align:center;
-      color:#607086;
-      box-shadow:0 10px 24px rgba(20,32,51,.05);
-    }
-
-    @media (max-width:1180px){
-      .catalog-top-grid{
-        grid-template-columns:1fr;
-      }
-
-      .catalog-content{
-        grid-template-columns:1fr;
-      }
-
-      .catalog-aside{
-        position:static;
-        grid-template-columns:repeat(2, 1fr);
-      }
-
-      .catalog-grid{
-        grid-template-columns:repeat(2, 1fr);
-      }
-
-      .catalog-tools{
-        grid-template-columns:1fr 1fr;
-      }
-    }
-
-    @media (max-width:820px){
-      .catalog-top{
-        padding:24px 20px;
-      }
-
-      .catalog-top h1{
-        font-size:34px;
-      }
-
-      .catalog-stats{
-        grid-template-columns:1fr;
-      }
-
-      .catalog-aside{
-        grid-template-columns:1fr;
-      }
-
-      .catalog-grid{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width:620px){
-      .catalog-tools{
-        grid-template-columns:1fr;
-      }
-
-      .catalog-top h1{
-        font-size:28px;
-      }
-
-      .product-name{
-        min-height:auto;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="topbar">
-    <div class="wrap topbar-inner">
-      <div class="topbar-left">
-        <span>Gran Talcahuano</span>
-        <span>Catálogo comercial</span>
+  if (!filtrados.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <strong>No encontramos productos</strong>
+        <div>Prueba cambiando la búsqueda o los filtros.</div>
       </div>
-      <div class="topbar-right">
-        <span>Pedidos coordinados</span>
-        <span>Cotización por WhatsApp</span>
-      </div>
-    </div>
-  </div>
+    `;
+    return;
+  }
 
-  <header class="header small-header">
-    <div class="wrap nav">
-      <a class="brand" href="index.html">
-        <img src="./logotipo.png" alt="Mundo D&H" class="brand-logo" />
-      </a>
+  grid.innerHTML = filtrados.map((producto, index) => {
+    const nombre = escapeHtml(obtenerNombre(producto));
+    const categoria = escapeHtml(obtenerCategoria(producto) || "General");
+    const marca = escapeHtml(obtenerMarca(producto) || "Mundo D&H");
+    const sku = escapeHtml(obtenerSku(producto));
+    const descripcion = escapeHtml(obtenerDescripcion(producto));
+    const imagen = obtenerImagen(producto);
+    const precio = formatearPrecio(obtenerPrecio(producto));
+    const stockTexto = escapeHtml(obtenerStockTexto(producto));
+    const stockClase = obtenerStockClase(producto);
 
-      <nav class="menu">
-        <a href="index.html">Inicio</a>
-        <a href="catalogo.html">Catálogo</a>
-        <a href="empresas.html">Empresas</a>
-        <a href="contacto.html">Contacto</a>
-      </nav>
+    return `
+      <article class="product-card">
+        <div class="product-image">
+          ${imagen ? `<img src="${escapeAttribute(imagen)}" alt="${nombre}" loading="lazy" onerror="this.style.display='none'">` : ""}
+          <div class="badge-top">${marca}</div>
+          <div class="badge-stock ${stockClase}">${stockTexto}</div>
+        </div>
 
-      <a class="btn btn-yellow" href="whatsapp.html">Cotizar</a>
-    </div>
-  </header>
+        <div class="product-body">
+          <div class="product-category">${categoria}</div>
+          <h3 class="product-name">${nombre}</h3>
 
-  <main class="catalog-shell">
-    <div class="wrap">
-      <section class="catalog-top">
-        <div class="catalog-top-grid">
-          <div>
-            <div class="catalog-kicker">Mundo D&amp;H · catálogo comercial</div>
-            <h1>Productos para empresas, oficinas y compras recurrentes</h1>
-            <p>
-              Explora el catálogo y cotiza de forma rápida por WhatsApp. Ideal para oficinas,
-              pymes, colegios, instituciones y abastecimiento comercial en Gran Talcahuano.
-            </p>
+          <div class="product-meta">
+            ${sku ? `<div><strong>SKU:</strong> ${sku}</div>` : ""}
+            ${marca ? `<div><strong>Marca:</strong> ${marca}</div>` : ""}
+            ${descripcion ? `<div>${descripcion}</div>` : ""}
           </div>
 
-          <div class="catalog-side-note">
-            <strong>Atención comercial directa</strong>
-            <span>
-              Catálogo orientado a cotización y coordinación. Revisa marcas, formatos,
-              categorías y solicita tu pedido con atención rápida.
-            </span>
+          <div class="product-prices">
+            <div class="price-row">
+              <span class="price-label">Precio</span>
+              <strong class="price-sale">${precio}</strong>
+            </div>
+          </div>
+
+          <div class="product-actions">
+            <button class="btn-product btn-wa" type="button" onclick="cotizarProducto(${index})">
+              Cotizar por WhatsApp
+            </button>
           </div>
         </div>
-      </section>
+      </article>
+    `;
+  }).join("");
+}
 
-      <section class="catalog-toolbar">
-        <div class="catalog-toolbar-card">
-          <div class="catalog-tools">
-            <input type="text" id="searchInput" placeholder="Buscar producto, marca o SKU..." />
+function actualizarResumen() {
+  const summaryProducts = document.getElementById("summaryProducts");
+  const summaryCategories = document.getElementById("summaryCategories");
+  const summaryBrands = document.getElementById("summaryBrands");
 
-            <select id="categoryFilter">
-              <option value="">Todas las categorías</option>
-            </select>
+  const categorias = new Set(
+    filtrados.map(p => obtenerCategoria(p)).filter(Boolean)
+  );
 
-            <select id="brandFilter">
-              <option value="">Todas las marcas</option>
-            </select>
+  const marcas = new Set(
+    filtrados.map(p => obtenerMarca(p)).filter(Boolean)
+  );
 
-            <select id="stockFilter">
-              <option value="">Todo stock</option>
-              <option value="con">Con stock</option>
-              <option value="bajo">Stock bajo</option>
-              <option value="sin">Sin stock</option>
-            </select>
-          </div>
-        </div>
-      </section>
+  if (summaryProducts) summaryProducts.textContent = filtrados.length;
+  if (summaryCategories) summaryCategories.textContent = categorias.size;
+  if (summaryBrands) summaryBrands.textContent = marcas.size;
+}
 
-      <section class="catalog-stats">
-        <article class="catalog-stat">
-          <strong id="summaryProducts">0</strong>
-          <span>Productos visibles</span>
-        </article>
+function cotizarProducto(index) {
+  const producto = filtrados[index];
+  if (!producto) return;
 
-        <article class="catalog-stat">
-          <strong id="summaryCategories">0</strong>
-          <span>Categorías activas</span>
-        </article>
+  const nombre = obtenerNombre(producto);
+  const marca = obtenerMarca(producto);
+  const categoria = obtenerCategoria(producto);
+  const sku = obtenerSku(producto);
+  const precio = formatearPrecio(obtenerPrecio(producto));
+  const stock = obtenerStockTexto(producto);
 
-        <article class="catalog-stat">
-          <strong id="summaryBrands">0</strong>
-          <span>Marcas visibles</span>
-        </article>
-      </section>
+  const mensaje = [
+    "Hola, quiero cotizar este producto de Mundo D&H:",
+    "",
+    `Producto: ${nombre}`,
+    marca ? `Marca: ${marca}` : "",
+    categoria ? `Categoría: ${categoria}` : "",
+    sku ? `SKU: ${sku}` : "",
+    `Precio: ${precio}`,
+    `Stock: ${stock}`,
+    "",
+    "Quedo atento(a) a disponibilidad y coordinación del pedido."
+  ].filter(Boolean).join("\n");
 
-      <section class="catalog-content">
-        <aside class="catalog-aside">
-          <article class="aside-card">
-            <h3>Compra más simple</h3>
-            <p>
-              Busca por producto, marca o SKU y cotiza directo desde la misma ficha.
-            </p>
-          </article>
+  const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
-          <article class="aside-card">
-            <h3>Enfoque comercial</h3>
-            <ul class="aside-list">
-              <li>Productos para oficina y empresa</li>
-              <li>Categorías claras</li>
-              <li>Cotización rápida por WhatsApp</li>
-            </ul>
+function obtenerNombre(producto) {
+  return (
+    producto.nombre ||
+    producto.producto ||
+    producto.title ||
+    producto.titulo ||
+    "Producto sin nombre"
+  );
+}
 
-            <a class="aside-cta" href="whatsapp.html">Ir a cotizar</a>
-          </article>
-        </aside>
+function obtenerCategoria(producto) {
+  return (
+    producto.categoria ||
+    producto.category ||
+    producto.rubro ||
+    ""
+  ).toString().trim();
+}
 
-        <section class="catalog-main">
-          <div class="catalog-grid" id="catalogGrid"></div>
-        </section>
-      </section>
-    </div>
-  </main>
+function obtenerMarca(producto) {
+  return (
+    producto.marca ||
+    producto.brand ||
+    ""
+  ).toString().trim();
+}
 
-  <footer class="footer">
-    <div class="wrap footer-grid">
-      <div>
-        <img src="./logotipo.png" alt="Mundo D&H" class="footer-logo" />
-        <p>Mundo D&amp;H · catálogo comercial con foco en Gran Talcahuano.</p>
-      </div>
+function obtenerSku(producto) {
+  return (
+    producto.sku ||
+    producto.codigo ||
+    producto.cod ||
+    producto.id_producto ||
+    ""
+  ).toString().trim();
+}
 
-      <div>
-        <h4>Navegación</h4>
-        <a href="index.html">Inicio</a>
-        <a href="catalogo.html">Catálogo</a>
-        <a href="empresas.html">Empresas</a>
-        <a href="contacto.html">Contacto</a>
-      </div>
+function obtenerDescripcion(producto) {
+  return (
+    producto.descripcion ||
+    producto.description ||
+    producto.detalle ||
+    producto.formato ||
+    ""
+  ).toString().trim();
+}
 
-      <div>
-        <h4>Cobertura</h4>
-        <div>Talcahuano</div>
-        <div>Hualpén</div>
-        <div>Penco · Lirquén · Tomé</div>
-      </div>
+function obtenerImagen(producto) {
+  return (
+    producto.imagen ||
+    producto.image ||
+    producto.foto ||
+    producto.img ||
+    producto.imagen_url ||
+    ""
+  ).toString().trim();
+}
 
-      <div>
-        <h4>Contacto</h4>
-        <div>dhasociados25@gmail.com</div>
-        <div>hernancorrealara@gmail.com</div>
-      </div>
-    </div>
-  </footer>
+function obtenerPrecio(producto) {
+  return (
+    producto.precio ??
+    producto.precio_venta ??
+    producto.valor ??
+    producto.price ??
+    producto.precio_final ??
+    0
+  );
+}
 
-  <script src="catalogo.js"></script>
-</body>
-</html>
+function obtenerStockTexto(producto) {
+  const stock = (
+    producto.stock_estado ??
+    producto.stock ??
+    producto.disponibilidad ??
+    producto.estado_stock ??
+    "Disponible"
+  ).toString().trim();
+
+  if (!stock) return "Disponible";
+  return stock;
+}
+
+function obtenerStockClase(producto) {
+  const texto = obtenerStockTexto(producto).toLowerCase();
+
+  if (texto.includes("sin") || texto.includes("agot")) {
+    return "out";
+  }
+
+  if (texto.includes("bajo")) {
+    return "low";
+  }
+
+  return "";
+}
+
+function formatearPrecio(valor) {
+  const numero = Number(
+    String(valor ?? 0).replace(/[^\d.-]/g, "")
+  );
+
+  if (!numero || Number.isNaN(numero)) {
+    return "Consultar";
+  }
+
+  return numero.toLocaleString("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0
+  });
+}
+
+function escapeHtml(texto) {
+  return String(texto ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(texto) {
+  return String(texto ?? "").replaceAll('"', "&quot;");
+}
