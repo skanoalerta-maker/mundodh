@@ -217,7 +217,17 @@ function renderProductos() {
     return `
       <article class="product-card">
         <div class="product-image">
-          ${imagen ? `<img src="${escapeAttribute(imagen)}" alt="${nombre}" loading="lazy" onerror="this.onerror=null; this.src='${escapeAttribute(obtenerImagenFallback(producto))}'">` : ""}
+          ${
+            imagen
+              ? `<img
+                  src="${escapeAttribute(imagen)}"
+                  alt="${nombre}"
+                  loading="lazy"
+                  data-codigo="${escapeAttribute(obtenerCodigoImagen(producto))}"
+                  onerror="manejarErrorImagen(this)"
+                >`
+              : ""
+          }
           <div class="badge-top">${marca}</div>
           <div class="badge-stock ${stockClase}">${stockTexto}</div>
         </div>
@@ -462,6 +472,17 @@ function obtenerSku(producto) {
   ).toString().trim();
 }
 
+function obtenerCodigoImagen(producto) {
+  return (
+    producto.codigo ||
+    producto.sku ||
+    producto.codigo_interno ||
+    producto.cod ||
+    producto.id_producto ||
+    ""
+  ).toString().trim();
+}
+
 function obtenerDescripcion(producto) {
   return (
     producto.descripcion ||
@@ -484,20 +505,52 @@ function obtenerImagen(producto) {
 
   if (imagenReal) return imagenReal;
 
-  const codigo = (
-    producto.codigo ||
-    producto.sku ||
-    producto.codigo_interno ||
-    producto.cod ||
-    producto.id_producto ||
-    ""
-  ).toString().trim();
+  const codigo = obtenerCodigoImagen(producto);
 
   if (codigo) {
     return `./assets/fotos-dimec/${codigo}.png`;
   }
 
   return obtenerImagenFallback(producto);
+}
+
+function manejarErrorImagen(img) {
+  if (!img) return;
+
+  const codigo = (img.dataset.codigo || "").trim();
+  const actual = img.getAttribute("src") || "";
+
+  if (!codigo) {
+    img.onerror = null;
+    img.src = obtenerFallbackGlobal();
+    return;
+  }
+
+  const rutas = [
+    `./assets/fotos-dimec/${codigo}.png`,
+    `./assets/fotos-dimec/${codigo}.jpg`,
+    `./assets/fotos-dimec/${codigo}.jpeg`,
+    `./assets/fotos-dimec/${codigo}.webp`
+  ];
+
+  const indiceActual = rutas.indexOf(actual);
+
+  if (indiceActual >= 0 && indiceActual < rutas.length - 1) {
+    img.src = rutas[indiceActual + 1];
+    return;
+  }
+
+  if (indiceActual === -1) {
+    img.src = rutas[1];
+    return;
+  }
+
+  img.onerror = null;
+  img.src = obtenerFallbackGlobal();
+}
+
+function obtenerFallbackGlobal() {
+  return "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=800&q=80";
 }
 
 function obtenerImagenFallback(producto) {
@@ -540,7 +593,7 @@ function obtenerImagenFallback(producto) {
     return "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80";
   }
 
-  return "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=800&q=80";
+  return obtenerFallbackGlobal();
 }
 
 function obtenerPrecio(producto) {
