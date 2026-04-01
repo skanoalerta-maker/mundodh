@@ -597,17 +597,23 @@ function obtenerImagenFallback(producto) {
 }
 
 function obtenerPrecio(producto) {
-  return (
+  const base =
+    producto.precio_neto ??
     producto.precio ??
     producto.precio_web_con_iva ??
     producto.precio_venta ??
     producto.valor ??
     producto.price ??
     producto.precio_final ??
-    0
-  );
-}
+    0;
 
+  if (!base) return null;
+
+  // cálculo: +19% IVA +29% margen
+  const precioFinal = Math.round(base * 1.5351);
+
+  return precioFinal;
+}
 function obtenerStockTexto(producto) {
   const stock = (
     producto.stock_estado ??
