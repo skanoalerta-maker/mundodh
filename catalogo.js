@@ -217,7 +217,7 @@ function renderProductos() {
     return `
       <article class="product-card">
         <div class="product-image">
-          ${imagen ? `<img src="${escapeAttribute(imagen)}" alt="${nombre}" loading="lazy" onerror="this.style.display='none'">` : ""}
+          ${imagen ? `<img src="${escapeAttribute(imagen)}" alt="${nombre}" loading="lazy" onerror="this.onerror=null; this.src='${escapeAttribute(obtenerImagenFallback(producto))}'">` : ""}
           <div class="badge-top">${marca}</div>
           <div class="badge-stock ${stockClase}">${stockTexto}</div>
         </div>
@@ -483,6 +483,19 @@ function obtenerImagen(producto) {
   ).toString().trim();
 
   if (imagenReal) return imagenReal;
+
+  const codigo = (
+    producto.codigo ||
+    producto.sku ||
+    producto.codigo_interno ||
+    producto.cod ||
+    producto.id_producto ||
+    ""
+  ).toString().trim();
+
+  if (codigo) {
+    return `./assets/fotos-dimec/${codigo}.png`;
+  }
 
   return obtenerImagenFallback(producto);
 }
